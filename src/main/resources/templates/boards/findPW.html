@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>FIND PASSWORD</title>
+    </head>
+    <body>
+        <input type="hidden" id="foundpw" th:value="${foundpw}">
+        <h1>FIND PASSWORD</h1>
+        <table>
+            <form th:action="@{findpw}" method="post">
+                <tr>
+                    <td><label>ID</label></td>
+                    <td><input type="text" id="userId" name="memberId" placeholder="아이디를 입력하세요."></td>
+                    <td><button id="findPW" type="submit">비밀번호 조회</button></td>
+                </tr>    
+            </form>
+        </table>
+        <br>
+        <div id="yourPassword">
+            <table>
+                <tr>
+                    <td>[[${foundpw}]]</td>
+                </tr>
+            </table>
+        </div>
+    </body>
+    <script>
+        // let foundpw = document.getElementById('foundpw');
+        // if(foundpw.length > 0) {
+        //     let passwordHtml = '';
+        //     $("#yourPassword").html(passwordHtml)
+        // }
+    </script>
+</html>

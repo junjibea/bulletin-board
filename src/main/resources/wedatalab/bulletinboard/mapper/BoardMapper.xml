@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="wedatalab.bulletinboard.mapper.BoardMapper">
+
+    <!-- 게시글 수 반환 -->
+    <select id="boardCount" resultType="int">
+        SELECT count(boardId) AS cnt FROM tbl_board
+    </select>
+
+    <!-- 회원가입 -->
+    <insert id="signUp" parameterType="wedatalab.bulletinboard.domain.Member">
+        INSERT INTO tbl_member (memberId, PW, salt)
+        VALUES
+        (#{memberId}, #{PW}, #{salt});
+    </insert>
+
+    <!-- loggedIn -->
+    <update id="loggedIn">
+        UPDATE tbl_member
+        SET loggedIn='Y'
+        WHERE memberId=#{memberId};
+    </update>
+
+    <!-- logout -->
+    <update id="logout">
+        UPDATE tbl_member
+        SET loggedIn='N'
+        WHERE memberId=#{memberId};
+    </update>
+
+    <!-- id 존재 여부 확인 -->
+    <select id="countId" resultType="int">
+        SELECT count(memberId) AS cnt FROM tbl_member
+        where memberId=#{memberId};
+    </select>
+
+    <!-- id 존재 여부 확인 -->
+    <select id="getLoggedIn" resultType="String">
+        SELECT loggedIn FROM tbl_member
+        where memberId=#{memberId};
+    </select>
+
+    <!-- 모든 memberId 가져오기 -->
+    <select id="getMemberId" resultType="String">
+        select memberId from tbl_member
+    </select>
+
+    <!-- 해당 ID 의 memberPW 가져오기 -->
+    <select id="getMemberPW" resultType="String">
+        select PW from tbl_member
+        where memberId=#{memberId};
+    </select>
+
+    <!-- 해당 ID 의 salt 가져오기 -->
+    <select id="getMemberSalt" resultType="String">
+        select salt from tbl_member
+        where memberId=#{memberId};
+    </select>
+
+    <!-- main 에서 게시글 리스트 띄우기 -->
+    <select id="getList" parameterType="wedatalab.bulletinboard.domain.Pagination" resultType="wedatalab.bulletinboard.domain.Board">
+        SELECT
+        *
+        FROM (SELECT ROWNUM AS NUM, TBL_BOARD.* FROM TBL_BOARD ORDER BY boardId DESC)
+        WHERE NUM BETWEEN (#{listCnt}-(#{pageSize} * #{curPage}) + 1) AND (#{listCnt}-#{pageSize} * (#{curPage}-1));
+    </select>
+
+    <!-- view 에서 글번호가 일치하는 게시글의 모든 속성 띄우기 -->
+    <select id="getBoard" parameterType="Long" resultType="wedatalab.bulletinboard.domain.Board">
+        SELECT
+        *
+        FROM tbl_board where boardId=#{boardId};
+    </select>
+
+    <!-- 게시글 작성 -->
+    <insert id="uploadBoard" useGeneratedKeys="true" keyProperty="boardId" parameterType="wedatalab.bulletinboard.domain.Board">
+        INSERT INTO tbl_board (title, content, name, read)
+        VALUES
+        (#{title}, #{content}, #{name}, 0);
+    </insert>
+
+    <!-- 게시글 수정 -->
+    <update id="updateBoard" parameterType="wedatalab.bulletinboard.domain.Board">
+        UPDATE tbl_board
+        SET title=#{title}, content=#{content}
+        WHERE boardId=#{boardId};
+    </update>
+
+    <!-- 게시글 삭제 -->
+    <delete id="deleteBoard" parameterType="Long">
+        DELETE
+        FROM tbl_board
+        WHERE boardId=#{boardId};
+    </delete>
+
+    <!-- 게시글 조회수 -->
+    <update id="viewCount">
+        UPDATE tbl_board
+        SET read = read + 1
+        WHERE boardId=#{boardId};
+    </update>
+
+    <!-- main 페이지에서 제목으로 게시글 검색하기 -->
+    <select id="searchTitle" parameterType="String" resultType="wedatalab.bulletinboard.domain.Board">
+        SELECT
+        *
+        FROM TBL_BOARD
+        where title like CONCAT('%', #{searchWord}, '%');
+    </select>
+
+    <!-- main 페이지에서 작성자로 게시글 검색하기 -->
+    <select id="searchName" parameterType="String" resultType="wedatalab.bulletinboard.domain.Board">
+        SELECT
+        *
+        FROM TBL_BOARD
+        WHERE name LIKE CONCAT('%', #{searchWord}, '%');
+    </select>
+
+    <!-- 파일 게시 -->
+    <insert id="uploadFile" parameterType="hashmap">
+        INSERT INTO tbl_file (boardId, org_file_name, stored_file_name, file_path)
+        VALUES(
+            <foreach collection="fileList" item="file" separator=",">
+            #{file}
+            </foreach>
+        );
+    </insert>
+
+    <!-- 사용자에게 보일 파일 이름 띄우기 -->
+    <select id="getOrgFileNameList" parameterType="Long" resultType="hashmap">
+        SELECT ORG_FILE_NAME
+        FROM tbl_file
+        WHERE boardId=#{boardId};
+    </select>
+
+    <!-- 사용자에게 보일 파일 이름 띄우기 -->
+    <select id="getOrgFileName" parameterType="Long" resultType="hashmap">
+        SELECT ORG_FILE_NAME
+        FROM tbl_file
+        WHERE file_no=#{file_no};
+    </select>
+
+    <!-- 파일 번호 띄우기 -->
+    <select id="getOrgFileNum" parameterType="Long" resultType="hashmap">
+        SELECT FILE_NO
+        FROM tbl_file
+        WHERE boardId=#{boardId};
+    </select>
+
+    <!-- 파일 경로 가져오기 -->
+    <select id="getFilePath" parameterType="Long" resultType="hashmap">
+        SELECT FILE_PATH
+        FROM tbl_file
+        WHERE file_no=#{file_no};
+    </select>
+
+    <!-- 서버,DB 에 저장한 파일 이름 띄우기 -->
+    <select id="getStoredFileName" parameterType="Long" resultType="hashmap">
+        SELECT STORED_FILE_NAME
+        FROM tbl_file
+        WHERE file_no=#{file_no};
+    </select>
+
+    <!-- 서버,DB 에 저장한 파일 이름 리스트 띄우기 -->
+    <select id="getStoredFileNameList" parameterType="Long" resultType="hashmap">
+        SELECT STORED_FILE_NAME
+        FROM tbl_file
+        WHERE boardId=#{boardId};
+    </select>
+
+    <!-- 파일 수정 -->
+    <update id="updateFile" parameterType="hashmap">
+        UPDATE tbl_file
+        SET
+            org_file_name=#{fileList.filename}, stored_file_name=#{fileList.storedFilename}, file_path=#{fileList.uploadPath}
+        WHERE file_no=#{fileList.file_no};
+    </update>
+
+    <!-- 파일 삭제 -->
+    <delete id="deleteFile" parameterType="Long">
+        DELETE
+        FROM tbl_file
+        WHERE boardId=#{boardId};
+    </delete>
+
+    <!-- CHAT -->
+    <insert id="uploadChat" parameterType="wedatalab.bulletinboard.domain.Chat">
+        INSERT INTO tbl_chat (sender, receiver, chat_content)
+        VALUES
+        (#{sender}, #{receiver}, #{chat_content});
+    </insert>
+
+    <!-- CHAT 보낸 시간 -->
+    <select id="getSentTime" parameterType="Long" resultType="String">
+        SELECT TO_CHAR(CHAT_REGDATE,'HH24:MI') FROM TBL_CHAT
+        WHERE chat_no=#{chat_no};
+    </select>
+
+    <!-- CHAT 내가 보낸 메시지 내용, 보낸 시간, 보낸 일자 띄우기 -->
+    <select id="getMyMessage" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
+        select chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time, to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
+        from tbl_chat
+        where sender=#{sender} and receiver=#{receiver};
+    </select>
+
+    <!-- CHAT 상대방이 보낸 메시지 내용, 보낸 시간, 보낸 일자 띄우기 -->
+    <select id="getCounterPartMessage" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
+        select chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time, to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
+        from tbl_chat
+        where sender=#{receiver} and receiver=#{sender};
+    </select>
+
+    <!-- CHAT 메시지 보낸 시간 띄우기 -->
+    <!-- <select id="getMessageTime" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="hashmap">
+        select to_char(chat_regdate,'hh24:mi')
+        from tbl_chat
+        where sender=#{sender} and receiver=#{receiver};
+    </select> -->
+
+    <!-- CHAT 내가 보낸 메시지 일자 띄우기 -->
+    <!-- <select id="getMessageDate" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
+        select to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
+        from tbl_chat
+        where sender=#{sender} and receiver=#{receiver}
+        group by sliced_chat_regdate;
+    </select> -->
+
+    <!-- CHAT 주고받은 메시지 일자 띄우기 -->
+    <select id="getAllMessageDate" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
+        select to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
+        from tbl_chat
+        where (sender=#{receiver} and receiver=#{sender}) or (sender=#{sender} and receiver=#{receiver})
+        group by sliced_chat_regdate;
+    </select>
+
+    <!-- CHAT 내가 받은 메시지 모아보기 -->
+    <select id="getAllMessage" parameterType="String" resultType="wedatalab.bulletinboard.domain.Chat">
+        select receiver, sender, chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time
+        from tbl_chat
+        where (receiver=#{receiver})
+        and (chat_regdate in (select max(chat_regdate) from tbl_chat group by sender));
+    </select>
+
+    <!-- CHAT 내게 메시지를 보낸 사람 리스트 -->
+    <select id="getAllSenders" parameterType="String" resultType="wedatalab.bulletinboard.domain.Chat">
+        SELECT distinct sender
+        FROM TBL_CHAT where receiver=#{receiver}
+    </select>
+
+    <!-- SELECT 
+    sender, chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time
+    FROM TBL_CHAT 
+    where receiver='wedatalab' 
+    and sender='hello' 
+    order by chat_no desc limit 1 -->
+
+</mapper>

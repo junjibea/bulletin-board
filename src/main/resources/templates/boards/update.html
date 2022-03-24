@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns xmlns:th="http://www.w3.org/1999/xhtml" : th="http://www.thymeleaf.org">
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+        <div class="container">
+            <form id="form" th:action="@{update}" method="post" enctype="multipart/form-data">
+                <p>글번호 : [[${update.boardId}]]</p>
+                제목 :
+                <div id="title">
+                    <textarea
+                    class="form-control" name="title">[[${update.title}]]
+                    </textarea>
+                </div>
+                <p>작성자 : [[${update.name}]]</p>
+                내용 :
+                <div id="content">
+                    <textarea
+                    class="form-control" name="content">[[${update.content}]]
+                    </textarea>
+                </div>
+                <div id="file-div"></div>
+                <table class="table table-hover" th:each="orgFileName :${orgFileName}" style="display:none">
+                    <input type="hidden" class="orgFileName" th:value="${orgFileName.values()}">
+                </table>
+                <br>
+                <input type="hidden" name="boardId" th:value="${update.boardId}">
+                <input type="hidden" name="name" th:value="${update.name}">
+                <br>
+                <button type="submit">저장</button>
+            </form>
+        </div>
+    </body>
+    <script src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script type="text/javascript">
+        // 첨부파일
+        const orgFileName = document.getElementsByClassName('orgFileName');
+        let fileHtml = '';
+        if (orgFileName.length !== 0) {
+            console.log("file 이 있음");
+            for (let i = 0; i < orgFileName.length; i++) {
+                console.log("orgFileName : ",orgFileName[i].value.slice(1,-1));
+                fileHtml += '첨부파일: <a href="javascript:void(0)">';
+                    fileHtml+=orgFileName[i].value.slice(1,-1);
+                fileHtml+='</a>';
+                fileHtml += '<br>';
+                fileHtml += '<br>';
+                fileHtml +=`<table class="table table-hover" each="orgFileName :`+orgFileName[i]+`" style="display:none">`;
+                fileHtml +='</table>';
+                $("#file-div").html(fileHtml)
+            }
+            fileHtml += '<input type="file" id="file" name="file" multiple>';
+            $("#file-div").html(fileHtml)
+        } else {
+            console.log("file 이 없음");
+            let fileHtml = '<input type="file" id="file" name="file" multiple>';
+            $("#file-div").html(fileHtml)
+        }
+    </script>
+</html>

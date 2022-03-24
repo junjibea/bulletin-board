@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Sign Up</title>
+    </head>
+    <body>
+        <h1>Sign Up</h1>
+        <div>
+            <table>
+                <form th:action="@{join}" method="post" id="join">
+                    <input type="hidden" name="onlyUnique" id="onlyUnique" th:value="${onlyUnique}">
+                    <tr>
+                        <td><label>ID</label></td>
+                        <td><input type="text" id="userId" name="memberId" placeholder="아이디를 입력하세요."></td>
+                        <td rowspan="2"><button id="btnSignUp">회원가입</button></td>
+                    </tr>
+                    <tr>
+                        <td><label>PW</label></td>
+                        <td><input type="password" id="passwd" name="PW" placeholder="비밀번호를 입력하세요."></td>
+                    </tr>
+                </form>
+        	</table>
+        </div>
+    </body>
+    <script src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        let onlyUnique = document.getElementById('onlyUnique').value;
+        if(onlyUnique.length > 0) {
+            alert(onlyUnique);
+        }
+    </script>
+</html>

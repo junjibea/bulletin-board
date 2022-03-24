@@ -1,0 +1,681 @@
+<page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+  <!-- ajax 추가 -->
+  <c:set var="cpath" value="${pageContext.request.contextPath}" />
+<taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<html xmlns xmlns:th="http://www.w3.org/1999/xhtml" : th="http://www.thymeleaf.org">
+  <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <title>게시판</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+  </head>
+  <body>
+    <input type="hidden" name="writer" id="writer" th:value="${memberId}">
+    <!-- ajax 로 띄우기 전 기본 틀 (container) 시작 -->
+    <!-- 게시글, 댓글, 대댓글 전체를 "container" 로 감싼다 -->
+    <!-- script 에서 ajax 를 통해 "container" 클래스를 html로 덧씌울 예정 -->
+    <div class="container">
+      <!-- BoardController 에서 view 페이지로 넘어올 때 -->
+      <!-- halo 라는 모델 객체에 게시글 정보 담아옴 -->
+      <p>글번호 : [[${halo.boardId}]]</p>
+      <p id="title">제목 : [[${halo.title}]]</p>
+      <p>작성자 : [[${halo.name}]]</p>
+      내용 :
+      <div id="content">
+        <textarea readonly="readonly" 
+        class="form-control"
+        th:text="${halo.content}">
+        </textarea>
+        <div id="file"></div>
+        <table class="table table-hover" th:each="orgFileName :${orgFileName}" style="display:none">
+          <input type="hidden" class="orgFileName" th:value="${orgFileName.values()}">
+        </table>
+        <table class="table table-hover" th:each="storedFileName :${storedFileName}" style="display:none">
+          <input type="hidden" name="storedFileName_to_put" class="storedFileName" th:value="${storedFileName.values()}">
+        </table>
+        <table class="table table-hover" th:each="file_no :${file_no}" style="display:none">
+          <input type="hidden" name="file_no" class="file_no" th:value="${file_no.values()}">
+        </table>
+      </div>
+      <br>
+      <!-- 게시글 수정 버튼 -->
+      <!-- type="submit" 인 수정 버튼을 누르면 -->
+      <!-- 컨트롤러에서 @GetMapping("/update") 를 실행하여 게시글을 수정하는 새로운 페이지를 띄움 -->
+      <form th:action="@{update}" method="get" style="display:inline-block">
+        <!-- 각 게시글에 해당하는 수정 페이지를 띄우기 위해 게시글의 글번호(boardId)를 hidden 으로 보냄 -->
+        <input type="hidden" name="boardId" th:value="${halo.boardId}">
+        <input type="hidden" name="writer" th:value="${halo.name}">
+        <button type="submit">수정</button>
+      </form>
+      <!-- 게시글 삭제 버튼 -->
+      <form th:action="@{delete}" method="get" style="display:inline-block" enctype="multipart/form-data">
+        <input type="hidden" name="boardId" th:value="${halo.boardId}">
+        <input type="hidden" name="writer" th:value="${halo.name}">
+        <button type="submit">삭제</button>
+      </form>
+      <!-- 홈버튼 -->
+      <form th:action="@{main}" method="get">
+        <button type="submit">홈</button>
+      </form>
+
+      <!-- 댓글 & 대댓글 시작 -->
+      <hr />
+      <!-- 댓글 -->
+      <!-- BoardController 에서 view 페이지로 넘어올 때 replyList 라는 모델 객체에 댓글 정보 담아옴 -->
+      <!-- 타임리프 반복문 (th:each)으로 댓글 리스트를 한줄 한줄 띄움 -->
+      <table class="table table-hover" th:each="replyList :${replyList}">
+        <thead>
+          <th>댓글번호</th>
+          <th>작성자</th>
+          <th>내용</th>
+          <th>날짜</th>
+        </thead>
+        <tr>
+          <!-- 댓글번호 -->
+          <td>[[${replyList.rno}]]</td> 
+          <!-- 댓글작성자 -->
+          <td>[[${replyList.writer}]]</td>
+          <!-- 댓글내용 -->
+          <td>
+            <!-- 수정전 댓글내용 -->
+            <div>
+              <p>[[${replyList.replyContent}]]</p>
+            </div>
+            <!-- 댓글 수정 칸, 수정할 댓글내용 -->
+            <form style="display:inline-block">
+              <textarea name="replyContent" 
+              class="replyContent" style="display:none"
+              rows="5" cols="10">[[${replyList.replyContent}]]</textarea>
+              <!-- 댓글을 수정하기 위해 필요한 정보: 게시글 번호(boardId), 댓글 번호(rno), 댓글작성자(writer) hidden 으로 보내기 -->
+              <input type="hidden" class="boardId" name="boardId" th:value="${halo.boardId}">
+              <input type="hidden" class="rno" name="rno" th:value="${replyList.rno}">
+              <input type="hidden" class="writer" name="writer" th:value="${replyList.writer}">
+              <!-- 댓글 수정 버튼: 기능은 아래 script 에 기재되어 있음 -->
+              <button type="button" class="updateReplyBtn">수정</button>
+              <!-- 댓글 수정후 저장 버튼: 기능은 아래 script 에 기재되어 있음 -->
+              <button type="button" class="saveUpdateReply" style="display:none">저장</button>
+              <!-- 수정하기 취소 버튼: display:none 속성을 주어 평소에 안 보이다가 수정 버튼을 눌렀을 때만 나타나게 함 -->
+              <button type="button" class="cancelUpdateReply" style="display:none">취소</button>
+            </form>
+            <!-- 댓글 삭제 버튼 -->
+            <form th:action="@{deleteReply}" method="get" style="display:inline-block">
+              <input type="hidden" name="boardId" th:value="${halo.boardId}">
+              <input type="hidden" name="rno" th:value="${replyList.rno}">
+              <input type="hidden" name="writer" th:value="${replyList.writer}">
+              <button type="submit">삭제</button>
+            </form>
+          </td>
+          <!-- 댓글작성날짜 -->
+          <td class="regdate">[[${replyList.regdate}]]</td>
+        </tr>
+        <!-- 대댓글 작성 폼 -->
+        <tr>
+          <td colspan="4">
+            <form>
+              <input type="hidden" name="boardId" class="boardId" th:value="${halo.boardId}">
+              <!-- 상위 댓글의 댓글번호(rno)를 보내어 대댓글을 업로드함 -->
+              <input type="hidden" name="parentId" class="parentId" th:value="${replyList.rno}">
+              <label>대댓글 작성자 : [[${memberId}]]</label>
+              <input type="hidden" class="form-control" name="writer" id="memberId" th:value="${memberId}">
+              <textarea class="form-control" name="replyContent" rows="5" cols="50"></textarea>
+              <!-- 대댓글 작성 버튼의 기능은 아래 script 에 기재되어 있음 -->
+              <button type="button" class="uploadReplyReplyBtn">대댓글 작성</button>
+            </form>
+          </td>
+        </tr>
+        <!-- 대댓글 리스트 보여주기 시작 -->
+        <!-- 컨트롤러에서 replyReplyList 라는 모델 객체에 대댓글 정보 담아와 타임리프 반복문을 돌려 보여줌 -->
+        <tr th:each="replyReplyList :${replyReplyList}"
+        th:if="${replyReplyList.parentId}==${replyList.rno}">
+          <!-- 대댓글의 댓글번호(rno) -->
+          <td>[[${replyReplyList.rno}]]</td>
+          <!-- 대댓글작성자 -->
+          <td>[[${replyReplyList.writer}]]</td>
+          <td>
+            <!-- 수정전 대댓글내용 -->
+            <div>
+              <p>[[${replyReplyList.replyContent}]]</p>
+            </div>
+            <!-- 대댓글 수정칸, 수정할 대댓글내용 -->
+            <form style="display:inline-block">
+              <textarea name="replyContent" 
+              class="replyContent" style="display:none"
+              rows="5" cols="10">[[${replyReplyList.replyContent}]]</textarea>
+              <input type="hidden" class="boardId" name="boardId" th:value="${halo.boardId}">
+              <input type="hidden" class="rno" name="rno" th:value="${replyReplyList.rno}">
+              <input type="hidden" class="writer" name="writer" th:value="${replyReplyList.writer}">
+              <!-- 댓글 수정 버튼 -->
+              <button type="button" class="updateReplyBtn">수정</button>
+              <!-- 댓글 수정후 저장 버튼 -->
+              <button type="button" class="saveUpdateReply" style="display:none">저장</button>
+              <!-- 수정하기 취소 버튼 -->
+              <button type="button" class="cancelUpdateReply" style="display:none">취소</button>
+              <input type="hidden" class="parentId" name="parentId" th:value="${replyReplyList.parentId}">
+            </form>
+            <!-- 대댓글 삭제 버튼 -->
+            <form th:action="@{deleteReply}" method="get" style="display:inline-block">
+              <input type="hidden" name="boardId" th:value="${halo.boardId}">
+              <input type="hidden" name="rno" th:value="${replyReplyList.rno}">
+              <input type="hidden" name="writer" th:value="${replyReplyList.writer}">
+              <button type="submit">삭제</button>
+            </form>
+          </td>
+          <td>[[${replyReplyList.regdate}]]</td>
+        </tr>
+      </table>
+      <!-- 댓글 & 대댓글 끝 -->
+
+      <!-- 댓글 작성 폼 -->
+      <div>
+        <form th:action="@{view}" method="post">
+          <input type="hidden" name="boardId" class="boardId" th:value="${halo.boardId}">
+          <label>댓글 작성자: [[${memberId}]]</label>
+          <input type="hidden" class="form-control" name="writer" th:value="${memberId}">
+          <textarea class="form-control" name="replyContent" 
+          rows="5" cols="50">
+          </textarea>
+          <button type="button" class="uploadReplyBtn">댓글 작성</button>
+        </form>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript">
+    // 로그인한 아이디
+    let memberId = $("#writer").val();
+
+    // 첨부파일
+    const boardId = document.getElementsByClassName('boardId')[0].value;
+    const orgFileName = document.getElementsByClassName('orgFileName');
+    const storedFileName = document.getElementsByClassName('storedFileName');
+    const file_no = document.getElementsByClassName('file_no');
+    let fileHtml = '';
+    for (let i = 0; i < orgFileName.length; i++) {
+      if (orgFileName[i] !== "") {
+        fileHtml += '<form action="download" method="get" style="display:inline-block">';
+          fileHtml += `<button type="submit" style="display:none" id="downloadBtn`+i+`"></button>`;
+          fileHtml += `첨부파일: <a href="javascript:void(0)" onclick="fileDownload(`+i+`);">`;
+            fileHtml+=orgFileName[i].value.slice(1,-1);
+          fileHtml+='</a>';
+          fileHtml += '<input type="hidden" name="boardId" value="'+boardId+'">';
+          fileHtml += '<input type="hidden" name="file_no" value="'+file_no[i].value.slice(1,-1)+'">';
+          fileHtml += '<input type="hidden" name="fileName_to_put" id="fileName" value="'+orgFileName[i].value.slice(1,-1)+'">';
+          fileHtml += '<input type="hidden" name="storedFileName_to_put" id="storedFileName" value="'+storedFileName[i].value.slice(1,-1)+'">';
+        fileHtml += '</form>';
+        fileHtml += '<br>';
+        $("#file").html(fileHtml)
+      }
+    }
+
+    // 파일 다운로드
+    function fileDownload(i) {
+      document.getElementById('downloadBtn'+i).click();
+    }
+    // 댓글 수정 버튼
+    const updateReplyBtn = document.getElementsByClassName('updateReplyBtn');
+    const replyWriter = document.getElementsByClassName('writer');
+    const a = (e) => {
+      if($(e.target.parentNode.children[3]).val()==memberId){
+        // e.target 은 수정 버튼을 가리킴
+        $(e.target.parentNode.parentNode.children[0]).hide(); // 원래 댓글 내용 숨기기
+        $(e.target.parentNode.children[0]).show(); // 댓글 수정 칸 나타내기
+        $(e.target.parentNode.children[5]).show(); // 저장 버튼 나타내기
+        $(e.target.parentNode.children[6]).show(); // 취소 버튼 나타내기
+        $(e.target).hide(); // 수정 버튼 숨기기
+        $(e.target.parentNode.parentNode.children[2]).hide(); // 삭제 버튼 숨기기
+        // jquery 로 인식할 수 있도록 $()로 감싸주기
+      } else {
+          alert("수정 권한이 없습니다.");
+        }
+    }
+    for(i=0;i<$(updateReplyBtn).length;i++){
+      updateReplyBtn[i].addEventListener('click', a);
+    }
+    // 댓글 수정 취소 버튼
+    const cancelUpdateReply = document.getElementsByClassName('cancelUpdateReply');
+    const b = (e) => {
+      // e.target 은 취소 버튼을 가리킴
+      $(e.target.parentNode.parentNode.children[0]).show(); // 원래 댓글 내용 나타내기
+      $(e.target.parentNode.children[0]).hide(); // 수정 칸 숨기기
+      $(e.target.parentNode.children[5]).hide(); // 저장 버튼 숨기기
+      $(e.target).hide(); // 취소 버튼 숨기기
+      $(e.target.parentNode.children[4]).show(); // 수정 버튼 나타내기
+      $(e.target.parentNode.parentNode.children[2]).show(); // 삭제 버튼 나타내기
+    }
+    for(i=0;i<$(cancelUpdateReply).length;i++){
+      cancelUpdateReply[i].addEventListener('click', b);
+    }
+  
+    // 수정한 댓글 저장 버튼
+    const saveUpdateReply = document.getElementsByClassName('saveUpdateReply');
+    const c = (e) => {
+      let beforeRno = $(e.target.parentNode.children[2]).val();
+      let beforeReplyContent = $(e.target.parentNode.children[0]).val();
+      console.log(beforeRno);
+      updateReplyJson(beforeRno, beforeReplyContent);
+    }
+    for(i=0;i<$(saveUpdateReply).length;i++){
+      saveUpdateReply[i].addEventListener('click', c);
+    }
+
+    // 댓글 수정 ajax 메소드
+    function updateReplyJson(beforeRno, beforeReplyContent){
+      let boardId = $(".boardId").val();
+      let rno = beforeRno;
+      let replyContent = beforeReplyContent;
+      let allData = {"boardId": boardId, "rno": rno, "replyContent": replyContent};
+      let reply = allData;
+
+      $.ajax({
+        url:"/board/ajaxUpdateReply",
+        async : false,
+        type: "POST",
+        dataType: "json",
+        data: reply,
+        cache: false,
+        success: function (data){
+          console.log(data);
+          ajaxHtml(data)
+        },
+        error: function(){alert("error");}
+      });
+    }
+  
+    // 댓글 작성 버튼
+    const uploadReplyBtn = document.getElementsByClassName("uploadReplyBtn");
+    const d = (e) => {
+      let beforeWriter = $(e.target.parentNode.children[2]).val();
+      let beforeReplyContent = $(e.target.parentNode.children[3]).val();
+      uploadReplyJson(beforeWriter, beforeReplyContent);
+    }
+    for(i=0;i<$(uploadReplyBtn).length;i++){
+      uploadReplyBtn[i].addEventListener('click', d);
+    }
+  
+    // 댓글 작성 ajax 메소드
+    function uploadReplyJson(beforeWriter, beforeReplyContent){
+      let boardId = $(".boardId").val();
+      let writer = beforeWriter;
+      let replyContent = beforeReplyContent;
+      let allData = {"boardId": boardId, "writer": writer, "replyContent": replyContent};
+      let reply = allData;
+      
+      $.ajax({
+        url:"/board/ajaxUploadReply",
+        async : false,
+        type: "POST",
+        dataType: "json",
+        data: reply,
+        cache: false,
+        success: function (data){
+          console.log(data);
+          ajaxHtml(data)
+        },
+        error: function(){alert("error");}
+      });
+    }
+  
+    // 대댓글 작성 버튼
+    const uploadReplyReplyBtn = document.getElementsByClassName("uploadReplyReplyBtn");
+    const e = (e) => {
+      let beforeWriter = $(e.target.parentNode.children[3]).val();
+      let beforeReplyContent = $(e.target.parentNode.children[4]).val();
+      let beforeParentId = $(e.target.parentNode.children[1]).val();
+      uploadReplyReplyJson(beforeWriter, beforeReplyContent, beforeParentId);
+    }
+    for(i=0;i<$(uploadReplyReplyBtn).length;i++){
+      uploadReplyReplyBtn[i].addEventListener('click', e);
+    }
+  
+    // 대댓글 작성 ajax 메소드
+    function uploadReplyReplyJson(beforeWriter, beforeReplyContent, beforeParentId){
+      let memberId = $("#writer").val();
+      console.log(memberId);
+      let boardId = $(".boardId").val();
+      let parentId = beforeParentId;
+      let writer = beforeWriter;
+      let replyContent = beforeReplyContent;
+      let allData = {"memberId" : memberId, "boardId": boardId, "parentId": parentId, "writer": writer, "replyContent": replyContent};
+      let reply = allData;
+      
+      $.ajax({
+        url:"/board/ajaxUploadReplyReply",
+        async : false,
+        type: "POST",
+        dataType: "json",
+        data: reply,
+        cache: false,
+        success: function (data){
+          console.log(data);
+          ajaxHtml(data)
+        },
+        error: function(){alert("error");}
+      });
+    }
+  
+    function ajaxHtml(data){
+      let viewHtml = '<div class="container">';
+        viewHtml+=`<input type="hidden" class="boardId" name="boardId" value="${data[0].boardId}">`;
+        viewHtml+='<p>글번호 : '+data[0].boardId+'</p>';
+        viewHtml+='<p>제목 : '+data[0].title+'</p>';
+        viewHtml+='<p>작성자 : '+data[0].name+'</p>';
+        viewHtml+='내용 :';
+        viewHtml+='<div id="content">';
+          viewHtml+='<textarea readonly="readonly" class="form-control">'+data[0].content+'</textarea>';
+        viewHtml+='</div>';
+        // 게시글 수정 버튼
+        viewHtml+='<form action="update" method="get" style="display:inline-block">';
+          viewHtml+=`<input type="hidden" name="boardId" value="${data[0].boardId}">`;
+          viewHtml+=`<input type="hidden" name="writer" value="${data[0].name}">`;
+          viewHtml+='<button type="submit">수정</button>';
+        viewHtml+='</form>';
+        // 게시글 삭제 버튼
+        viewHtml+='<form action="delete" method="get" style="display:inline-block">';
+          viewHtml+=`<input type="hidden" name="boardId" value="${data[0].boardId}">`;
+          viewHtml+=`<input type="hidden" name="writer" value="${data[0].name}">`;
+          viewHtml+='<button type="submit">삭제</button>';
+        viewHtml+='</form>';
+        // 홈버튼
+        viewHtml+='<form action="main" method="get">';
+          viewHtml+='<button type="submit">홈</button>';
+        viewHtml+='</form>';
+        // 댓글 & 대댓글 데이터 보여주기 시작
+        viewHtml+='<hr />';
+        // 댓글
+        $.each(data, (index, replyList) => {
+          // data[index] 가 댓글
+          // replyList 가 대댓글
+          if(data[index].parentId == null){
+            viewHtml+='<table class="table table-hover">';
+              viewHtml+='<thead>';
+                viewHtml+='<th>댓글번호</th>';
+                viewHtml+='<th>작성자</th>';
+                viewHtml+='<th>내용</th>';
+                viewHtml+='<th>날짜</th>';
+              viewHtml+='</thead>';
+              viewHtml+='<tr>';
+                viewHtml+='<td>'+replyList.rno+'</td>';
+                viewHtml+='<td>'+replyList.writer+'</td>';
+                viewHtml+='<td>';
+                  // 수정전 댓글내용
+                  viewHtml+='<div>';
+                    viewHtml+='<p>'+replyList.replyContent+'</p>';
+                  viewHtml+='</div>';
+                  // 수정할 댓글내용
+                  viewHtml+='<form style="display:inline-block">'
+                    viewHtml+='<textarea class="replyContent" name="replyContent" style="display:none" rows="5" cols="10">'+replyList.replyContent+'</textarea>';
+                    viewHtml+=`<input type="hidden" name="boardId" value="${replyList.boardId}">`;
+                    viewHtml+=`<input type="hidden" name="rno" value="${replyList.rno}">`;
+                    viewHtml+=`<input type="hidden" class="writer" name="writer" value="${replyList.writer}">`;
+                    // 댓글 수정 버튼
+                    viewHtml+='<button type="button" class="updateReplyBtn">수정</button>';
+                    // 댓글 수정후 저장 버튼
+                    viewHtml+='<button type="button" class="saveUpdateReply" style="display:none">저장</button>';
+                    // 수정하기 취소 버튼
+                    viewHtml+='<button type="button" class="cancelUpdateReply" style="display:none">취소</button>';
+                  viewHtml+='</form>';
+                  // 댓글 삭제 버튼
+                  viewHtml+='<form action="deleteReply" method="get" style="display:inline-block">';
+                    viewHtml+=`<input type="hidden" name="boardId" value="${replyList.boardId}">`;
+                    viewHtml+=`<input type="hidden" name="rno" value="${replyList.rno}">`;
+                    viewHtml+=`<input type="hidden" name="writer" value="${replyList.writer}">`;
+                    viewHtml+='<button type="submit">삭제</button>';
+                  viewHtml+='</form>';
+                viewHtml+='</td>';
+                // 댓글 업로드 시간 "YYYY-MM-DD" 형식으로 바꾸기
+                let momentDate = moment(replyList.regdate);
+                let regdateMoment = momentDate.format("YYYY-MM-DD");
+                viewHtml+='<td>'+regdateMoment+'</td>';
+              viewHtml+='</tr>';
+              viewHtml+='<tr>';
+                // 대댓글 작성 폼
+                viewHtml+='<td colspan="4">';
+                  viewHtml+='<form>';
+                    viewHtml+=`<input type="hidden" name="boardId" class="boardId" value="${replyList.boardId}">`;
+                    // 댓글의 rno
+                    viewHtml+=`<input type="hidden" name="parentId" class="parentId" value="${replyList.rno}">`;
+                    let memberId = $("#writer").val();
+                    viewHtml+='<label>대댓글 작성자 : [[${memberId}]]</label>';
+                    viewHtml+=`<input type="hidden" class="form-control" name="writer" value="${memberId}">`; // 왜 memberId undefined 로 뜨지?!
+                    viewHtml+='<textarea class="form-control" name="replyContent" rows="5" cols="50"></textarea>';
+                    viewHtml+='<button type="button" class="uploadReplyReplyBtn">대댓글 작성</button>';
+                  viewHtml+='</form>';
+                viewHtml+='</td>';
+              viewHtml+='</tr>';
+              // 대댓글
+              for (let i in data){
+                // 이 페이지의 모든 댓글들 (data) 중 parentId 가 해당 댓글 (data[index]) 의 rno 와 같은 경우
+                // data[i] 가 대댓글, data[index] 가 댓글
+                if(data[index].rno==data[i].parentId){
+                  viewHtml+='<tr>';
+                    viewHtml+='<td>'+data[i].rno+'</td>';
+                    viewHtml+='<td>'+data[i].writer+'</td>';
+                    viewHtml+='<td>';
+                      // 수정전 대댓글내용
+                      viewHtml+='<div>';
+                        viewHtml+='<p>'+data[i].replyContent+'</p>';
+                      viewHtml+='</div>';
+                      // 수정할 댓글내용
+                      viewHtml+='<form style="display:inline-block">';
+                        viewHtml+='<textarea class="replyContent" name="replyContent" style="display:none" rows="5" cols="10">'+data[i].replyContent+'</textarea>'; // replyReplyList
+                        viewHtml+=`<input type="hidden" name="boardId" value="${data[i].boardId}">`;
+                        viewHtml+=`<input type="hidden" name="rno" value="${data[i].rno}">`;
+                        viewHtml+=`<input type="hidden" class="writer" name="writer" value="${data[i].writer}">`;
+                        // 댓글 수정 버튼
+                        viewHtml+='<button type="button" class="updateReplyBtn">수정</button>';
+                        // 댓글 수정후 저장 버튼
+                        viewHtml+='<button type="button" class="saveUpdateReply" style="display:none">저장</button>';
+                        // 수정하기 취소 버튼
+                        viewHtml+='<button type="button" class="cancelUpdateReply" style="display:none">취소</button>';
+                        viewHtml+=`<input type="hidden" name="parentId" value="${data[i].parentId}">`;
+                      viewHtml+='</form>';
+                      // 댓글 삭제 버튼
+                      viewHtml+=`<form action="deleteReply" method="get" style="display:inline-block">`;
+                        viewHtml+=`<input type="hidden" name="boardId" value="${data[i].boardId}">`;
+                        viewHtml+=`<input type="hidden" name="rno" value="${data[i].rno}">`;
+                        viewHtml+=`<input type="hidden" name="writer" value="${data[i].writer}">`;
+                        viewHtml+='<button type="submit">삭제</button>';
+                      viewHtml+='</form>';
+                    viewHtml+='</td>';
+                    // 댓글 업로드 시간 "YYYY-MM-DD" 형식으로 바꾸기
+                    let momentDate = moment(data[i].regdate);
+                    let regdateMoment = momentDate.format("YYYY-MM-DD");
+                    viewHtml+='<td>'+regdateMoment+'</td>';
+                  viewHtml+='</tr>';
+                }
+              }
+            viewHtml+='</table>';
+          }
+        })
+        // 댓글 & 대댓글 데이터 보여주기 끝
+        // 댓글 작성 폼
+        viewHtml+='<div>';
+          viewHtml+=`<form action="view" method="post">`;
+            viewHtml+=`<input type="hidden" name="boardId" class="boardId" value="${data[0].boardId}">`;
+            viewHtml+='<label>댓글 작성자 : [[${memberId}]]</label>';
+            let memberId = $("#writer").val();
+            viewHtml+=`<input type="hidden" class="form-control" name="writer" value="${memberId}">`;
+            viewHtml+='<textarea class="form-control" name="replyContent" rows="5" cols="50"></textarea>';
+            viewHtml+='<button type="button" class="uploadReplyBtn">댓글 작성</button>';
+          viewHtml+='</form>';
+        viewHtml+='</div>';
+      viewHtml+='</div>';
+      $(".container").html(viewHtml)
+      
+      // 첨부파일
+      const boardId = document.getElementsByClassName('boardId')[0].value;
+      const orgFileName = document.getElementsByClassName('orgFileName');
+      const storedFileName = document.getElementsByClassName('storedFileName');
+      const file_no = document.getElementsByClassName('file_no');
+      let fileHtml = '';
+      for (let i = 0; i < orgFileName.length; i++) {
+        if (orgFileName[i] !== "") {
+          fileHtml += '<form action="download" method="get" style="display:inline-block">';
+            fileHtml += `<button type="submit" style="display:none" id="downloadBtn`+i+`"></button>`;
+            fileHtml += `첨부파일: <a href="javascript:void(0)" onclick="fileDownload(`+i+`);">`;
+              fileHtml+=orgFileName[i].value.slice(1,-1);
+            fileHtml+='</a>';
+            fileHtml += '<input type="hidden" name="boardId" value="'+boardId+'">';
+            fileHtml += '<input type="hidden" name="file_no" value="'+file_no[i].value.slice(1,-1)+'">';
+            fileHtml += '<input type="hidden" name="fileName_to_put" id="fileName" value="'+orgFileName[i].value.slice(1,-1)+'">';
+            fileHtml += '<input type="hidden" name="storedFileName_to_put" id="storedFileName" value="'+storedFileName[i].value.slice(1,-1)+'">';
+          fileHtml += '</form>';
+          fileHtml += '<br>';
+          $("#file").html(fileHtml)
+        }
+      }
+      
+      // 파일 다운로드
+      function fileDownload(i) {
+        document.getElementById('downloadBtn'+i).click();
+      }
+
+      // 댓글 수정 버튼
+      const updateReplyBtn = document.getElementsByClassName('updateReplyBtn');
+      const replyWriter = document.getElementsByClassName('writer');
+      const a = (e) => {
+        let memberId = $("#writer").val();
+        // e.target 은 댓글 수정 버튼을 가리킴
+        console.log($(e.target.parentNode.children[3]).value);
+        console.log(memberId);
+        if($(e.target.parentNode.children[3]).val()==memberId){
+          $(e.target.parentNode.parentNode.children[0]).hide(); // 원래 댓글 내용 숨기기
+          $(e.target.parentNode.children[0]).show(); // 댓글 수정 칸 나타내기
+          $(e.target.parentNode.children[5]).show(); // 저장 버튼 나타내기
+          $(e.target.parentNode.children[6]).show(); // 취소 버튼 나타내기
+          $(e.target).hide(); // 수정 버튼 숨기기
+          $(e.target.parentNode.parentNode.children[2]).hide(); // 삭제 버튼 숨기기
+          // jquery 로 인식할 수 있도록 $()로 감싸주기
+        } else {
+          alert("수정 권한이 없습니다.");
+        }
+      }
+      for(i=0;i<$(updateReplyBtn).length;i++){
+        updateReplyBtn[i].addEventListener('click', a);
+      }
+      
+      // 댓글 수정 취소 버튼
+      const cancelUpdateReply = document.getElementsByClassName('cancelUpdateReply');
+      const b = (e) => {
+        // e.target 은 취소 버튼을 가리킴
+        $(e.target.parentNode.parentNode.children[0]).show(); // 원래 댓글 내용 나타내기
+        $(e.target.parentNode.children[0]).hide(); // 수정 칸 숨기기
+        $(e.target.parentNode.children[5]).hide(); // 저장 버튼 숨기기
+        $(e.target).hide(); // 취소 버튼 숨기기
+        $(e.target.parentNode.children[4]).show(); // 수정 버튼 나타내기
+        $(e.target.parentNode.parentNode.children[2]).show(); // 삭제 버튼 나타내기
+      }
+      for(i=0;i<$(cancelUpdateReply).length;i++){
+        cancelUpdateReply[i].addEventListener('click', b);
+      }
+      // 수정한 댓글 저장 버튼
+      const saveUpdateReply = document.getElementsByClassName('saveUpdateReply');
+      const c = (e) => {
+        let beforeRno = $(e.target.parentNode.children[2]).val();
+        let beforeReplyContent = $(e.target.parentNode.children[0]).val();
+        console.log(beforeRno);
+        console.log(beforeReplyContent);
+        // ajax 로 업데이트하는 함수
+        updateReplyJson(beforeRno, beforeReplyContent);
+      }
+      for(i=0;i<$(saveUpdateReply).length;i++){
+        saveUpdateReply[i].addEventListener('click', c);
+      }
+      
+      // 수정한 댓글 저장 후 댓글 데이터 ajax 로 띄우는 메소드
+      function updateReplyJson(beforeRno, beforeReplyContent){
+        let boardId = $(".boardId").val();
+        let rno = beforeRno;
+        let replyContent = beforeReplyContent;
+        let allData = {"boardId": boardId, "rno": rno, "replyContent": replyContent};
+        let reply = allData;
+
+        $.ajax({
+          url:"/board/ajaxUpdateReply",
+          async : false,
+          type: "POST",
+          dataType: "json",
+          data: reply,
+          cache: false,
+          success: function (data){
+            console.log(data);
+            ajaxHtml(data)
+          },
+          error: function(){alert("error");}
+        });
+      }
+      
+      // 댓글 작성 버튼
+      const uploadReplyBtn = document.getElementsByClassName("uploadReplyBtn");
+      const d = (e) => {
+        let beforeWriter = $(e.target.parentNode.children[2]).val();
+        let beforeReplyContent = $(e.target.parentNode.children[3]).val();
+        uploadReplyJson(beforeWriter, beforeReplyContent);
+      }
+      for(i=0;i<$(uploadReplyBtn).length;i++){
+        uploadReplyBtn[i].addEventListener('click', d);
+      }
+      
+      // 댓글 업로드 ajax 메소드
+      function uploadReplyJson(beforeWriter, beforeReplyContent){
+        let boardId = $(".boardId").val();
+        let writer = beforeWriter;
+        let replyContent = beforeReplyContent;
+        let allData = {"boardId": boardId, "writer": writer, "replyContent": replyContent};
+        let reply = allData;
+
+        $.ajax({
+          url:"/board/ajaxUploadReply",
+          async : false,
+          type: "POST",
+          dataType: "json",
+          data: reply,
+          cache: false,
+          success: function (data){
+            console.log(data);
+            ajaxHtml(data)
+          },
+          error: function(){alert("error");}
+        });
+      }
+      
+      // 대댓글 작성 버튼
+      const uploadReplyReplyBtn = document.getElementsByClassName("uploadReplyReplyBtn");
+      const e = (e) => {
+        let beforeWriter = $(e.target.parentNode.children[3]).val();
+        let beforeReplyContent = $(e.target.parentNode.children[4]).val();
+        let beforeParentId = $(e.target.parentNode.children[1]).val();
+        uploadReplyReplyJson(beforeWriter, beforeReplyContent, beforeParentId);
+      }
+      for(i=0;i<$(uploadReplyReplyBtn).length;i++){
+        uploadReplyReplyBtn[i].addEventListener('click', e);
+      }
+        
+      // 대댓글 업로드 ajax 메소드
+      function uploadReplyReplyJson(beforeWriter, beforeReplyContent, beforeParentId){
+        let boardId = $(".boardId").val();
+        let parentId = beforeParentId; // 이게 문제
+        let writer = beforeWriter;
+        let replyContent = beforeReplyContent;
+        let allData = {"boardId": boardId, "parentId": parentId, "writer": writer, "replyContent": replyContent};
+        let reply = allData;
+    
+        $.ajax({
+          url:"/board/ajaxUploadReplyReply",
+          async : false,
+          type: "POST",
+          dataType: "json",
+          data: reply,
+          cache: false,
+          success: function (data){
+            console.log(data);
+            ajaxHtml(data)
+          },
+          error: function(){alert("error");}
+        });
+      }
+    }; 
+  </script>
+</html>

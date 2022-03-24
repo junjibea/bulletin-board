@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns xmlns:th="http://www.w3.org/1999/xhtml" : th="http://www.thymeleaf.org">
+    <head>
+        <link href="../css/upload.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+        <div class="container">
+            <!-- enctype="multipart/form-data" 는 form 요소로 파일이나 이미지를 서버로 전송할 때 사용 -->
+            <form th:action="@{upload}" method="post" enctype="multipart/form-data">
+                <table class="table table-striped" style="text-align: center; border: 1px solid #dddddd">
+                    <thead>
+                        <tr>
+                            <th colspan="2" style="background-color: #eeeeee; text-align: center;">게시판 글쓰기 양식</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align:left;">글 작성자 : [[${memberId}]]</td>
+                            <input type="hidden" class="form-control" placeholder="글 작성자" name="name" th:value="${memberId}" maxlength="50">
+                        </tr>
+                        <tr>
+                            <td><input type="text" class="form-control" placeholder="글 제목" name="title" maxlength="50"></td>
+                        </tr>
+                        <tr>
+                            <td><textarea class="form-control" placeholder="글 내용" name="content" maxlength="2048" style="height:350px;"></textarea></td>
+                        </tr>
+                        <tr style="text-align:left">
+                            <td>
+                                file: <input type="file" id="file" name="file" multiple> <br>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="text-align:right">
+                    <button type="submit" class="custom-btn btn-6">업로드</button>                
+                </div>                
+            </form>
+        </div>
+    </body>
+</html>

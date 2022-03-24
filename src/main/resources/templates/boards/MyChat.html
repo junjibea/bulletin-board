@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="../css/styles.css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to Kokoa Talk</title>
+    </head>
+    <body>
+        <a th:each="AllSendersList:${AllSendersList}">
+            <input type="hidden" class="AllSendersList" th:value="${AllSendersList.sender}" />
+        </a>
+        <a th:each="AllMessageList:${AllMessageList}">
+            <input type="hidden" class="AllMessageList" th:value="${AllMessageList.sender}" />
+        </a>
+        <div class="status-bar">
+            <div class="status-bar__column">
+                <Span>No Service</Span>
+                <i class="fas fa-wifi"></i>
+                <!--to do wifi Icon-->
+            </div>
+            <div class="status-bar__column">
+                <span>18:43</span>
+            </div>
+            <div class="status-bar__column">
+                <span>100%</span>
+                <i class="fas fa-battery-full fa-lg"></i>
+                <i class="fas fa-bolt"></i>
+                <!--battery icon-->
+                <!--lighting icon-->
+            </div>
+        </div>
+        <header class="screen-header">
+            <h1 class="screen-header__title">Chats</h1>
+            <div class="screen-hearder__icons">
+                <span><i class="fas fa-search fa-lg"></i></span>
+                <span><i class="far fa-comment-dots fa-lg"></i></span>
+                <span><i class="fas fa-music fa-lg"></i></span>
+                <span><i class="fas fa-cog fa-lg"></i></span>
+            </div>
+        </header>
+        <main class="main-screen">      
+            <a href="chat.html">
+                <div class="user-component" th:each="AllSendersList:${AllSendersList}">
+                    <div class="user-component__column" th:each="AllMessageList:${AllMessageList}">
+                        <p class="user-component__column content"></p>
+                        <img th:if="${AllMessageList.sender}==${AllSendersList.sender}" src="kaka.png" class="user-component__avatar user-component__avatar"/>
+                        <div class="user-component__text">
+                            <h4 th:if="${AllMessageList.sender}==${AllSendersList.sender}" class="user-component__title">[[${AllSendersList.sender}]]</h4>
+                            <h6 th:if="${AllMessageList.sender}==${AllSendersList.sender}" class="user-component__subtitle">[[${AllMessageList.chat_content}]]</h6>
+                        </div>
+                    </div>
+                    <div class="user-component__column" th:each="AllMessageList:${AllMessageList}">
+                        <p class="user-component__column content"></p>
+                        <span th:if="${AllMessageList.sender}==${AllSendersList.sender}" class="user-component__time">[[${AllMessageList.sliced_chat_time}]]</span>
+                        <div th:if="${AllMessageList.sender}==${AllSendersList.sender}" class="badge">1</div>
+                    </div>
+                </div>
+            </a>
+        </main>
+        <nav class="nav">
+            <ul class="nav__list">
+                <li class="nav_btn"><a class="nav__link"><i class="far fa-user fa-2x"></i></a></li>
+            <li class="nav_btn"><a class="nav__link"><span class="nav__notification badge">1</span><i class="fas fa-comment fa-2x"></i></a></li>
+            <li class="nav_btn"><a class="nav__link"><i class="fas fa-search fa-2x"></i></a></li>
+            <li class="nav_btn"><a class="nav__link"><span class="nav__notification2"></span><i class="fas fa-ellipsis-h fa-2x"></i></a></li>
+            </ul>
+        </nav>
+    </body>
+    <script src="https://kit.fontawesome.com/a9eb1f10be.js" crossorigin="anonymous"></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script>
+        let AllMessageList = document.getElementsByClassName('AllMessageList');
+        for (let i = 0; i < AllMessageList.length; i++) {
+            console.log(AllMessageList[i].value);
+        }
+        let AllSendersList = document.getElementsByClassName('AllSendersList');
+        for (let i = 0; i < AllSendersList.length; i++) {
+            console.log(AllSendersList[i].value);
+        }
+        const senderAndContent = document.getElementsByClassName('user-component__column content');
+        for(i=0; i < senderAndContent.length; i++) {
+            $(senderAndContent[i]).html('<input type="hidden" id=button'+i+'>')
+        }
+    </script>
+</html>
