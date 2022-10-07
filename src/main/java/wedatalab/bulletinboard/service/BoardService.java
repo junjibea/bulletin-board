@@ -25,12 +25,12 @@ public class BoardService {
     Pagination pagination;
     Member member;
     Chat chat;
-    
+
     // 회원가입
     public void signUp(Member member) {
         boardMapper.signUp(member);
     }
-    
+
     // checkId
     public int countId(String memberId) {
         return boardMapper.countId(memberId);
@@ -65,7 +65,7 @@ public class BoardService {
     public String getLoggedIn(String memberId) {
         return boardMapper.getLoggedIn(memberId);
     }
-    
+
     // 게시글 수 반환
     public int boardCount() {
         return boardMapper.boardCount();
@@ -129,7 +129,7 @@ public class BoardService {
     public ArrayList<HashMap<String,String>> getOrgFileName(Long file_no) {
         return boardMapper.getOrgFileName(file_no);
     }
-    
+
     // 사용자에게 보일 파일 이름 리스트 띄우기
     public ArrayList<HashMap<String,String>> getOrgFileNameList(Long boardId) {
         return boardMapper.getOrgFileNameList(boardId);
@@ -139,7 +139,7 @@ public class BoardService {
     public List<Integer> getOrgFileNum(Long boardId) {
         return boardMapper.getOrgFileNum(boardId);
     }
-    
+
     // 파일 경로 가져오기
     public ArrayList<HashMap<String,String>> getFilePath(Long file_no) {
         return boardMapper.getFilePath(file_no);
@@ -149,7 +149,7 @@ public class BoardService {
     public ArrayList<HashMap<String,String>> getStoredFileName(Long file_no) {
         return boardMapper.getStoredFileName(file_no);
     }
-    
+
     // 서버,DB 에 저장한 파일 이름 띄우기
     public ArrayList<HashMap<String,String>> getStoredFileNameList(Long boardId) {
         return boardMapper.getStoredFileNameList(boardId);
@@ -159,7 +159,7 @@ public class BoardService {
     public void updateFile(HashMap<String, HashMap<String,String>> commandMap) {
         boardMapper.updateFile(commandMap);
     }
-    
+
     // 파일 삭제
     public void deleteFile(Long boardId) {
         boardMapper.deleteFile(boardId);

@@ -12,14 +12,13 @@ body{
 .badge{
     background-color:tomato;
     width:30px;
-    height: 30px;  
+    height: 30px;
     border-radius: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
-   color:white;
-   font-weight: 600;
- 
+    color:white;
+    font-weight: 600;
 }
 
 /* nav-bar.css */
@@ -40,7 +39,6 @@ body{
 .nav__link{
     position: relative;
     color:#2e363e;
-    
 }
 
 @keyframes notificationAnimation{
@@ -56,21 +54,17 @@ body{
 }
 
 
-.nav__notification{
-   position:absolute;
-   left:15px;
-  bottom:15px;
-  /* animation:notificationAnimation 2s ease-in-out infinite; */
+.nav__notification {
+    position:absolute;
+    left:15px;
+    bottom:15px;
+    /* animation:notificationAnimation 2s ease-in-out infinite; */
 }
-
-
-
-
 
 .nav__notification2{
     background-color:tomato;
     width:5px;
-    height: 5px;  
+    height: 5px;
     border-radius: 15px;
     display: flex;
     justify-content: center;
@@ -82,160 +76,154 @@ body{
     bottom:25px;
 }
 
-@keyframes appearBtnAnimation{
+@keyframes appearBtnAnimation {
     from {
-        
         opacity: 0;
     }
-    to{
+    to {
         transform: none;
         opacity: 1;
     }
 }
 
 
-.nav_btn{
+.nav_btn {
     transform: translateY(50px);
     opacity: 0;
     animation: appearBtnAnimation 0.3s ease-in-out forwards;
 }
 
-.nav_btn:nth-child(2){
+.nav_btn:nth-child(2) {
     animation-delay:0.2s;
 }
 
-.nav_btn:nth-child(3){
+.nav_btn:nth-child(3) {
     animation-delay:0.4s;
 }
 
-.nav_btn:last-child{
+.nav_btn:last-child {
     animation-delay:0.6s;
 }
-.screen-header{
+
+.screen-header {
     display:flex;
     justify-content: space-between;
     align-items: center;
     padding: var(--horizontal-space);
-    
 }
 
-.screen-header__title{
+.screen-header__title {
     font-size: 32px;
     font-weight: 600;
 }
 
-.screen-hearder__icons span{
+.screen-hearder__icons span {
     margin-left: 25px;
 }
 
 @keyframes rotatecog{
-    from{
+    from {
         transform: none;
     }
-    to{
+    to {
         transform: rotateZ(360deg);
-    
     }
 }
 
 
-.screen-hearder__icons .fa-cog:hover{
+.screen-hearder__icons .fa-cog:hover {
     animation: rotatecog 1s linear infinite;
 }
-.status-bar{
+
+.status-bar {
     display: flex;
     justify-content: center;
     padding: 5px 3px;
-    
-    
 }
 
-.status-bar__column{
+.status-bar__column {
     position: fixed;
     top:0;
     width:100%;
     box-sizing:border-box;
 }
 
-.status-bar__column:first-child span{
+.status-bar__column:first-child span {
     margin-right:5px;
 }
 
-.status-bar__column:nth-child(2){
+.status-bar__column:nth-child(2) {
     display: flex;
     justify-content: center;
 }
 
-.status-bar__column:last-child{
+.status-bar__column:last-child {
     display: flex;
     justify-content: flex-end;
     align-items: center;
 }
 
-.status-bar__column .fa-battery-full{
+.status-bar__column .fa-battery-full {
     margin:0px 5px;
 }
-.user-component{
+
+.user-component {
     display: flex;
     justify-content: space-between;
 }
 
-
-
 .user-component,
-.user-component__column:first-child{
+.user-component__column:first-child {
     display: flex;
     align-items: center;
 }
 
-.user-component__avatar{
+.user-component__avatar {
     width:70px;
     height: 70px;
     border-radius:30px;
     margin-right:20px;
 }
 
-.user-component__title{
+.user-component__title {
     font-weight: 600;
     font-size: 22px;
 }
 
-.user-component__subtitle{
+.user-component__subtitle {
     margin-top: 5px;
     font-size: 17px;
     color:rgba(0, 0, 0, 0.5);
 }
 
-.user-component__avatar--xl{
+.user-component__avatar--xl {
     width:80px;
     height: 80px;
-    
 }
 
-.user-component__avatar--sm{
+.user-component__avatar--sm {
     width:60px;
     height: 60px;
     border-radius: 25px;
-    
 }
 
-.user-component__title--not-bold{
+.user-component__title--not-bold {
     font-weight: 350;
     font-size: 22px;
 }
 
-
-.user-component__column:last-child{
+.user-component__column:last-child {
     color:rgba(0, 0, 0, 0.3);
     display:flex;
     flex-direction: column;
     align-items: flex-end;
 }
 
-.user-component__time{
+.user-component__time {
     margin-bottom: 10px;
     display: block;
 }
+
 .arrow-prev::after {
     position: absolute;
     left: 20px;

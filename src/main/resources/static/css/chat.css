@@ -64,7 +64,7 @@
     border-radius: 50%;
     margin-right: 10px;
 }
-.message__author{    
+.message__author{
     margin-bottom: 5px;
     display: block;
 }
@@ -122,7 +122,7 @@
     opacity:0.5;
 }
 .reply input{
-    padding: 12px;        
+    padding: 12px;
     width: 95%;
     border:var(--main-border);
     border-radius: 20px;
@@ -136,7 +136,7 @@
 }
 .reply__column:last-child > i{
     right: 40px;
-    top:15px        
+    top:15px;
 }
 .reply__column button{
     background-color: var(--yellow);
@@ -166,12 +166,12 @@
     border: none;
     outline:none;
     width: 87vw;
-    transform: translateX(-12%) translateY(-80px);    
+    transform: translateX(-12%) translateY(-80px);
 }
 .status-bar{
     display: flex;
     justify-content: center;
-    padding: 5px 3px;        
+    padding: 5px 3px;
 }
 .status-bar__column{
     position: fixed;
@@ -224,7 +224,7 @@ body{
     /* position: relative; */
     /* display: inline-block; */
 /* } */
-  
+
 /* .tooltip .tooltiptext { */
     /* visibility: hidden; */
     /* 이벤트가 없으면 툴팁 영역을 숨김 */
@@ -240,7 +240,7 @@ body{
     /* z-index: 1; */
     /* transition: opacity 0.3s; */
 /* } */
-  
+
 /* .tooltip:hover .tooltiptext { */
     /* visibility: visible; */
     /* hover 이벤트 발생시 영역을 보여줌 */
@@ -265,15 +265,15 @@ body{
     /* right: 105%; */
     /* 왼쪽에 생성해야하므로 영역을 오른쪽에서 105% 이동 */
   /* } */
-  
+
   /* .tooltip .tooltip-left::after { */
     /* top: 50%; */
     /* 사각형 영역이 중앙에 오도록 위치 */
     /* left: 100%; */
     /* 왼쪽에서 100% 위치에 오도록 위치 */
     /* margin-top: -5px; */
-  
+
     /* 사각형의 테두리에서 왼쪽만 노출 */
     /* border-color: transparent transparent transparent black; */
-    
+
   /* }   */

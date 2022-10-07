@@ -4,16 +4,18 @@
     border-radius: 4px;
     color: white;
     cursor: pointer;
-     box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5),
-     7px 7px 20px 0px rgba(255,255,255,.5),
-     4px 4px 5px 0px rgba(255,255,255,.5);
+    box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5),
+    7px 7px 20px 0px rgba(255,255,255,.5),
+    4px 4px 5px 0px rgba(255,255,255,.5);
 }
+
 .input-file-button span {
     position: relative;
     display: block;
     width: 100%;
     height: 100%;
 }
+
 .input-file-button:before,
 .input-file-button:after {
     position: absolute;
@@ -26,29 +28,35 @@
     7px 7px 20px 0px rgba(0,0,0,.4),
     4px 4px 5px 0px rgba(0,0,0,.3);
 }
+
 .input-file-button:before {
     right: 0;
     top: 0;
     transition: all 500ms ease;
 }
+
 .input-file-button:after {
     left: 0;
     bottom: 0;
     transition: all 500ms ease;
 }
+
 .input-file-button:hover{
     background: transparent;
     color: #76aef1;
     box-shadow: none;
 }
+
 .input-file-button:hover:before {
     transition: all 500ms ease;
     height: 100%;
 }
+
 .input-file-button:hover:after {
     transition: all 500ms ease;
     height: 100%;
 }
+
 .input-file-button span:before,
 .input-file-button span:after {
     position: absolute;
@@ -59,6 +67,7 @@
     7px 7px 20px 0px rgba(0,0,0,.4),
     4px 4px 5px 0px rgba(0,0,0,.3);
 }
+
 .input-file-button span:before {
     left: 0;
     top: 0;
@@ -66,6 +75,7 @@
     height: .5px;
     transition: all 500ms ease;
 }
+
 .input-file-button span:after {
     right: 0;
     bottom: 0;
@@ -73,12 +83,15 @@
     height: .5px;
     transition: all 500ms ease;
 }
+
 .input-file-button span:hover:before {
     width: 100%;
 }
+
 .input-file-button span:hover:after {
     width: 100%;
 }
+
 .custom-btn {
     color: #fff;
     border-radius: 5px;
@@ -95,6 +108,7 @@
     4px 4px 5px 0px rgba(255,255,255,.5);
     outline: none;
 }
+
 .btn-6 {
     width: 70px;
     height: 40px;
@@ -103,12 +117,14 @@
     padding: 0;
     border: none;
 }
+
 .btn-6 span {
     position: relative;
     display: block;
     width: 100%;
     height: 100%;
 }
+
 .btn-6:before,
 .btn-6:after {
     position: absolute;
@@ -121,29 +137,35 @@
     7px 7px 20px 0px rgba(0,0,0,.4),
     4px 4px 5px 0px rgba(0,0,0,.3);
 }
+
 .btn-6:before {
     right: 0;
     top: 0;
     transition: all 500ms ease;
 }
+
 .btn-6:after {
     left: 0;
     bottom: 0;
     transition: all 500ms ease;
 }
+
 .btn-6:hover{
     background: transparent;
     color: #76aef1;
     box-shadow: none;
 }
+
 .btn-6:hover:before {
     transition: all 500ms ease;
     height: 100%;
 }
+
 .btn-6:hover:after {
     transition: all 500ms ease;
     height: 100%;
 }
+
 .btn-6 span:before,
 .btn-6 span:after {
     position: absolute;
@@ -154,6 +176,7 @@
     7px 7px 20px 0px rgba(0,0,0,.4),
     4px 4px 5px 0px rgba(0,0,0,.3);
 }
+
 .btn-6 span:before {
     left: 0;
     top: 0;
@@ -161,6 +184,7 @@
     height: .5px;
     transition: all 500ms ease;
 }
+
 .btn-6 span:after {
     right: 0;
     bottom: 0;
@@ -168,9 +192,11 @@
     height: .5px;
     transition: all 500ms ease;
 }
+
 .btn-6 span:hover:before {
     width: 100%;
 }
+
 .btn-6 span:hover:after {
     width: 100%;
 }
