@@ -4,6 +4,7 @@ import org.springframework.stereotype.Repository;
 
 import wedatalab.bulletinboard.domain.Board;
 import wedatalab.bulletinboard.domain.Chat;
+import wedatalab.bulletinboard.domain.Gongji;
 import wedatalab.bulletinboard.domain.Member;
 import wedatalab.bulletinboard.domain.Pagination;
 
@@ -102,24 +103,39 @@ public interface BoardMapper {
     String getSentTime(Long chat_no);
 
     // CHAT 내가 보낸 메시지 내용, 보낸 시간, 보낸 일자 띄우기
-    List<String> getMyMessage(Chat chat);
+    List<Chat> getMyMessage(Chat chat);
 
     // getMessageTime
     List<String> getMessageTime(Chat chat);
 
     // CHAT 내가 보낸 메시지 일자 띄우기
-    // List<String> getMessageDate(Chat chat);
+    List<String> getMessageDate(Chat chat);
 
     // getCounterPartMessage
-    List<String> getCounterPartMessage(Chat chat);
+    // List<String> getCounterPartMessage(Chat chat);
 
     // CHAT 주고받은 메시지 일자 띄우기
     List<String> getAllMessageDate(Chat chat);
 
     // CHAT 내가 받은 메시지 모아보기
-    List<String> getAllMessage(String receiver);
+    List<Chat> getRecentMessage(Chat chat);
 
     // CHAT 내게 메시지를 보낸 사람 리스트
     List<String> getAllSenders(String receiver);
+
+    // chat
+    void insertGongji(Gongji gongji);
+
+    // chat
+    // String selectGongji(Gongji gongji);
+
+    // chat
+    Gongji selectGongji(Chat chat);
+
+    // chat
+    int countGongji(Gongji gongji);
+
+    // chat
+    void updateGongji(Gongji gongji);
 
 }

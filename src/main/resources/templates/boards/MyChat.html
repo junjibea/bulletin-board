@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <link rel="stylesheet" href="../css/styles.css">
+        <link rel="stylesheet" href="../css/MyChat.css">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Welcome to Kokoa Talk</title>
     </head>
     <body>
-        <a th:each="AllSendersList:${AllSendersList}">
-            <input type="hidden" class="AllSendersList" th:value="${AllSendersList.sender}" />
-        </a>
-        <a th:each="AllMessageList:${AllMessageList}">
-            <input type="hidden" class="AllMessageList" th:value="${AllMessageList.sender}" />
-        </a>
         <div class="status-bar">
             <div class="status-bar__column">
                 <Span>No Service</Span>
@@ -20,7 +14,7 @@
                 <!--to do wifi Icon-->
             </div>
             <div class="status-bar__column">
-                <span>18:43</span>
+                <span id="time"></span>
             </div>
             <div class="status-bar__column">
                 <span>100%</span>
@@ -31,30 +25,51 @@
             </div>
         </div>
         <header class="screen-header">
-            <h1 class="screen-header__title">Chats</h1>
-            <div class="screen-hearder__icons">
-                <span><i class="fas fa-search fa-lg"></i></span>
-                <span><i class="far fa-comment-dots fa-lg"></i></span>
-                <span><i class="fas fa-music fa-lg"></i></span>
-                <span><i class="fas fa-cog fa-lg"></i></span>
-            </div>
+            <table style="width: 100%;">
+                <tr>
+                    <td>
+                        <form th:action="@{main}" method="get" style="background-color: white;">
+                            <button type="submit" style="display:none"></button>
+                            <span class="arrow-prev"></span>
+                        </form>
+                    </td>
+                    <td>
+                        <h1 class="screen-header__title" style="margin-left: 30px">Chats</h1>
+                    </td>
+                    <td style="text-align:right;">
+                        <div class="screen-hearder__icons">
+                            <span><i class="fas fa-search fa-lg"></i></span>
+                            <span><i class="far fa-comment-dots fa-lg"></i></span>
+                            <span><i class="fas fa-music fa-lg"></i></span>
+                            <span><i class="fas fa-cog fa-lg"></i></span>
+                        </div>            
+                    </td>
+                </tr>
+        </table>
         </header>
-        <main class="main-screen">      
-            <a href="chat.html">
-                <div class="user-component" th:each="AllSendersList:${AllSendersList}">
-                    <div class="user-component__column" th:each="AllMessageList:${AllMessageList}">
-                        <p class="user-component__column content"></p>
-                        <img th:if="${AllMessageList.sender}==${AllSendersList.sender}" src="kaka.png" class="user-component__avatar user-component__avatar"/>
-                        <div class="user-component__text">
-                            <h4 th:if="${AllMessageList.sender}==${AllSendersList.sender}" class="user-component__title">[[${AllSendersList.sender}]]</h4>
-                            <h6 th:if="${AllMessageList.sender}==${AllSendersList.sender}" class="user-component__subtitle">[[${AllMessageList.chat_content}]]</h6>
-                        </div>
+        <main class="main-screen" style="margin-bottom: 100px;">
+            <a href="javascript:void(0)" style="text-decoration: none; color: #000;" class="user-component" th:each="getRecentMessage:${getRecentMessage}" >
+                <div class="user-component__column">
+                    <form th:action="@{chat}" method="get" style="display:none">
+                        <input type="hidden" name="sender" th:if="${receiver}!=${getRecentMessage.receiver}" th:value="${receiver}">
+                        <input type="hidden" name="sender" th:if="${receiver}==${getRecentMessage.receiver}" th:value="${getRecentMessage.receiver}">
+                        <input type="hidden" name="receiver" th:if="${receiver}!=${getRecentMessage.receiver}" th:value="${getRecentMessage.receiver}">
+                        <input type="hidden" name="receiver" th:if="${receiver}==${getRecentMessage.receiver}" th:value="${getRecentMessage.sender}">
+                        <button type="submit" style="display:none"></button>
+                    </form>
+                    <img src="https://mblogthumb-phinf.pstatic.net/20150427_261/ninevincent_1430122791768m7oO1_JPEG/kakao_1.jpg?type=w2" class="user-component__avatar user-component__avatar"/>
+                    <div class="user-component__text">
+                        <h4 style="font-size: 20px" th:if="${receiver}!=${getRecentMessage.receiver}">[[${getRecentMessage.receiver}]]</h4>
+                        <h4 style="font-size: 20px" th:if="${receiver}==${getRecentMessage.receiver}">[[${getRecentMessage.sender}]]</h4>
+                        <p class="last-chat-message" style="color : rgb(139, 136, 136)">[[${getRecentMessage.chat_content}]]</p>
                     </div>
-                    <div class="user-component__column" th:each="AllMessageList:${AllMessageList}">
-                        <p class="user-component__column content"></p>
-                        <span th:if="${AllMessageList.sender}==${AllSendersList.sender}" class="user-component__time">[[${AllMessageList.sliced_chat_time}]]</span>
-                        <div th:if="${AllMessageList.sender}==${AllSendersList.sender}" class="badge">1</div>
-                    </div>
+                </div>
+                <div class="user-component__column">
+                    <p class="chat_time">
+                    <input type="hidden" class="regdate" th:value="${getRecentMessage.sliced_chat_regdate}"/>
+                    [[${getRecentMessage.sliced_chat_time}]]
+                    </p>
+                    <div class="badge">1</div>
                 </div>
             </a>
         </main>
@@ -70,17 +85,47 @@
     <script src="https://kit.fontawesome.com/a9eb1f10be.js" crossorigin="anonymous"></script>
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script>
-        let AllMessageList = document.getElementsByClassName('AllMessageList');
-        for (let i = 0; i < AllMessageList.length; i++) {
-            console.log(AllMessageList[i].value);
+        let backToMainBtn = document.getElementsByClassName('arrow-prev');
+        const backToMain = (e) => {
+            $(e.target).parent()[0].children[0].click();
         }
-        let AllSendersList = document.getElementsByClassName('AllSendersList');
-        for (let i = 0; i < AllSendersList.length; i++) {
-            console.log(AllSendersList[i].value);
+        for(i=0;i<backToMainBtn.length;i++) {
+            backToMainBtn[i].addEventListener('click',backToMain);
         }
-        const senderAndContent = document.getElementsByClassName('user-component__column content');
-        for(i=0; i < senderAndContent.length; i++) {
-            $(senderAndContent[i]).html('<input type="hidden" id=button'+i+'>')
+        let usercomponentBtn = document.getElementsByClassName('user-component');
+        const goToChattingRoom = (e) => {
+            $(e.target).children()[0].children[0].children[2].click();
         }
+        for(i=0;i<usercomponentBtn.length;i++) {
+            usercomponentBtn[i].addEventListener('click',goToChattingRoom);
+        }
+        // 오늘 날짜
+        let today = new Date();
+        let yesterday = new Date(today.setDate(today.getDate()-1));
+        function getToday(date){
+            let year = date.getFullYear();
+            let month = ("0" + (1 + date.getMonth())).slice(-2);
+            let day = ("0" + date.getDate()).slice(-2);
+            return year + "-" + month + "-" + day;
+        };
+        const regdateValue = document.getElementsByClassName('regdate');
+        $(".chat_time").each(function(idx) {
+            // 어제 받은 메시지인 경우 받은 시간 대신 '어제' 띄우기
+            if($(this)[0].children[0].value==getToday(yesterday)) {
+                $(this).html('<p>어제</p>');
+            }
+            // 어제 이전에 받은 메시지인 경우 받은 시간 대신 받은 날짜 띄우기
+            else if ($(this)[0].children[0].value<getToday(yesterday)) {
+                $(this).html('<p>'+$(this)[0].children[0].value+'</p>');
+            }
+        });
+        function getTime() {
+            let date = new Date();
+            let hours = date.getHours();
+            let minutes = ("0"+date.getMinutes()).slice(-2);
+
+            return hours + ":" + minutes;
+        }
+        $("#time").html(getTime());
     </script>
 </html>

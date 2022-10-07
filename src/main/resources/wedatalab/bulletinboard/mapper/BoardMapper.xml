@@ -197,37 +197,23 @@
         WHERE chat_no=#{chat_no};
     </select>
 
-    <!-- CHAT 내가 보낸 메시지 내용, 보낸 시간, 보낸 일자 띄우기 -->
+    <!-- CHAT 주고받은 메시지 내용, 보낸 시간, 보낸 일자 띄우기 -->
     <select id="getMyMessage" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
-        select chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time, to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
+        select receiver, sender, chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time, to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
         from tbl_chat
-        where sender=#{sender} and receiver=#{receiver};
+        where sender=#{sender} and receiver=#{receiver} or sender=#{receiver} and receiver=#{sender};
     </select>
-
-    <!-- CHAT 상대방이 보낸 메시지 내용, 보낸 시간, 보낸 일자 띄우기 -->
-    <select id="getCounterPartMessage" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
-        select chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time, to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
-        from tbl_chat
-        where sender=#{receiver} and receiver=#{sender};
-    </select>
-
-    <!-- CHAT 메시지 보낸 시간 띄우기 -->
-    <!-- <select id="getMessageTime" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="hashmap">
-        select to_char(chat_regdate,'hh24:mi')
-        from tbl_chat
-        where sender=#{sender} and receiver=#{receiver};
-    </select> -->
 
     <!-- CHAT 내가 보낸 메시지 일자 띄우기 -->
-    <!-- <select id="getMessageDate" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
+    <select id="getMessageDate" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
         select to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
         from tbl_chat
         where sender=#{sender} and receiver=#{receiver}
         group by sliced_chat_regdate;
-    </select> -->
+    </select>
 
     <!-- CHAT 주고받은 메시지 일자 띄우기 -->
-    <select id="getAllMessageDate" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
+    <select id="getAllMessageDate" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="String">
         select to_char(chat_regdate,'yyyy"년 "mm"월 "dd"일"') as sliced_chat_regdate
         from tbl_chat
         where (sender=#{receiver} and receiver=#{sender}) or (sender=#{sender} and receiver=#{receiver})
@@ -235,24 +221,46 @@
     </select>
 
     <!-- CHAT 내가 받은 메시지 모아보기 -->
-    <select id="getAllMessage" parameterType="String" resultType="wedatalab.bulletinboard.domain.Chat">
-        select receiver, sender, chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time
-        from tbl_chat
-        where (receiver=#{receiver})
-        and (chat_regdate in (select max(chat_regdate) from tbl_chat group by sender));
+    <select id="getRecentMessage" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Chat">
+        SELECT receiver, sender, chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time,
+        to_char(chat_regdate,'yyyy"-"mm"-"dd') as sliced_chat_regdate FROM TBL_CHAT WHERE CHAT_REGDATE in(
+        SELECT max(a) FROM
+        (SELECT max(CHAT_REGDATE) a,receiver FROM TBL_CHAT WHERE SENDER = #{receiver} group by receiver
+        union
+        SELECT max(CHAT_REGDATE) ,sender FROM TBL_CHAT WHERE RECEIVER = #{receiver} group by sender)
+        GROUP BY RECEIVER) order by chat_regdate desc;
     </select>
 
     <!-- CHAT 내게 메시지를 보낸 사람 리스트 -->
-    <select id="getAllSenders" parameterType="String" resultType="wedatalab.bulletinboard.domain.Chat">
-        SELECT distinct sender
-        FROM TBL_CHAT where receiver=#{receiver}
+    <select id="getAllSenders" parameterType="String" resultType="String">
+        SELECT distinct sender, max(chat_regdate)
+        FROM TBL_CHAT where receiver=#{receiver} group by sender order by max(chat_regdate) desc;
     </select>
 
-    <!-- SELECT 
-    sender, chat_content, to_char(chat_regdate,'hh24:mi') as sliced_chat_time
-    FROM TBL_CHAT 
-    where receiver='wedatalab' 
-    and sender='hello' 
-    order by chat_no desc limit 1 -->
+    <!-- 공지 업로드 -->
+    <insert id="insertGongji" parameterType="wedatalab.bulletinboard.domain.Gongji">
+        INSERT INTO TBL_GONGJI (sender, receiver, gongji_content)
+        VALUES
+        (#{sender}, #{receiver}, #{gongji_content});
+    </insert>
+
+    <!-- 공지 가져오기 -->
+    <select id="selectGongji" parameterType="wedatalab.bulletinboard.domain.Chat" resultType="wedatalab.bulletinboard.domain.Gongji">
+        select gongji_content from TBL_GONGJI
+        where (sender=#{sender} and receiver=#{receiver}) or (sender=#{receiver} and receiver=#{sender});
+    </select>
+
+    <!-- 업로드된 공지 이미 있는지 체크 -->
+    <select id="countGongji" parameterType="wedatalab.bulletinboard.domain.Gongji" resultType="int">
+        select count(gongji_no) from TBL_GONGJI
+        where (sender=#{sender} and receiver=#{receiver}) or (sender=#{receiver} and receiver=#{sender});
+    </select>
+
+    <!-- 공지 수정 -->
+    <update id="updateGongji" parameterType="wedatalab.bulletinboard.domain.Gongji">
+        UPDATE TBL_GONGJI
+        SET gongji_content=#{gongji_content}
+        where (sender=#{sender} and receiver=#{receiver}) or (sender=#{receiver} and receiver=#{sender});
+    </update>
 
 </mapper>

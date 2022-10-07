@@ -19,7 +19,7 @@
 }
 @keyframes fadeIn{
     from{
-        transform: translateY(30px);
+        transform: translateY(1px);
         opacity: 0;
     }
     to{
@@ -28,12 +28,20 @@
     }
 }
 .main-chat{
-    margin-top: 90px;
-    padding-top: 90px;
+    margin-top: 45px;
+    /* padding-top: 50px; */
     display: flex;
     flex-direction:column;
-    /* align-items: center; */
     animation: fadeIn 0.8s linear;
+}
+#gongji {
+    padding-left: 5px;
+    position:fixed;
+    margin-left: 4px;
+    top: 63px;
+    width: 99%;
+    border-radius:1px;
+    z-index: 1;
 }
 .chat__timestamp{
     color:white;
@@ -42,7 +50,8 @@
     padding:10px;
     font-size: 14px;
     border-radius: 16px;
-    margin-bottom: 15px;
+    margin-top: 15px;
+    /* margin-bottom: 15px; */
 }
 .message-row{
     width: 100%;
@@ -55,7 +64,7 @@
     border-radius: 50%;
     margin-right: 10px;
 }
-.message__author{    
+.message__author{
     margin-bottom: 5px;
     display: block;
 }
@@ -113,7 +122,7 @@
     opacity:0.5;
 }
 .reply input{
-    padding: 12px;        
+    padding: 12px;
     width: 95%;
     border:var(--main-border);
     border-radius: 20px;
@@ -127,7 +136,7 @@
 }
 .reply__column:last-child > i{
     right: 40px;
-    top:15px        
+    top:15px;
 }
 .reply__column button{
     background-color: var(--yellow);
@@ -154,13 +163,15 @@
     opacity:0;
 }
 .reply:focus-within input {
+    border: none;
+    outline:none;
     width: 87vw;
-    transform: translateX(-12%) translateY(-80px);    
+    transform: translateX(-12%) translateY(-80px);
 }
 .status-bar{
     display: flex;
     justify-content: center;
-    padding: 5px 3px;        
+    padding: 5px 3px;
 }
 .status-bar__column{
     position: fixed;
@@ -183,28 +194,15 @@
 .status-bar__column .fa-battery-full{
     margin:0px 5px;
 }
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap');
-@import "reset.css";
-@import "variable.css";
-@import "components/status-bar.css";
-@import "screens/login.css";
-@import "components/nav-bar.css";
-@import "components/screen-header.css";
-@import "screens/friends.css";
-@import "components/user-component.css";
-@import "components/badge.css";
-@import "screens/find.css";
-@import "components/icon-row.css";
-@import "screens/more.css";
-@import "components/alt-screen-header.css";
-@import "screens/settings.css";
-@import "screens/chat.css";
-
 body{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     color:#2e363e;
 }
+#chats {
+    padding:50px var(--horizontal-space);
+}
 .main-screen{
+    margin-top: 20px;
     padding:0px var(--horizontal-space);
 }
 :root{
@@ -222,3 +220,60 @@ body{
     background-color: #abc1d1;
     margin-left: 10px;
 }
+/* .tooltip { */
+    /* position: relative; */
+    /* display: inline-block; */
+/* } */
+
+/* .tooltip .tooltiptext { */
+    /* visibility: hidden; */
+    /* 이벤트가 없으면 툴팁 영역을 숨김 */
+    /* width: 120px; */
+    /* 툴팁 영역의 넓이를 설정 */
+    /* background-color: black; */
+    /* color: #fff; */
+    /* text-align: center; */
+    /* border-radius: 6px; */
+    /* padding: 5px 0; */
+    /* position: absolute; */
+    /* 절대 위치를 사용 */
+    /* z-index: 1; */
+    /* transition: opacity 0.3s; */
+/* } */
+
+/* .tooltip:hover .tooltiptext { */
+    /* visibility: visible; */
+    /* hover 이벤트 발생시 영역을 보여줌 */
+    /* opacity: 1; */
+/* } */
+/* .tooltip .tooltiptext::after { */
+    /* content: " "; */
+    /* 정사각형 영역 사용 */
+    /* position: absolute; */
+    /* 절대 위치 사용 */
+    /* border-style: solid; */
+    /* border-width: 5px; */
+    /* 테두리 넓이를 5px 로 설정 */
+    /* top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-color: #555 transparent transparent transparent;
+  } */
+  /* .tooltip .tooltip-left { */
+    /* top: -5px; */
+    /* 영역의 위치를 -5 만큼 위로 이동 */
+    /* right: 105%; */
+    /* 왼쪽에 생성해야하므로 영역을 오른쪽에서 105% 이동 */
+  /* } */
+
+  /* .tooltip .tooltip-left::after { */
+    /* top: 50%; */
+    /* 사각형 영역이 중앙에 오도록 위치 */
+    /* left: 100%; */
+    /* 왼쪽에서 100% 위치에 오도록 위치 */
+    /* margin-top: -5px; */
+
+    /* 사각형의 테두리에서 왼쪽만 노출 */
+    /* border-color: transparent transparent transparent black; */
+
+  /* }   */

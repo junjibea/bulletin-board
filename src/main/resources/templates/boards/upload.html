@@ -2,7 +2,12 @@
 <html xmlns xmlns:th="http://www.w3.org/1999/xhtml" : th="http://www.thymeleaf.org">
     <head>
         <link href="../css/upload.css" rel="stylesheet" type="text/css" />
+        <script src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+        <script type="text/javascript" src="/smarteditor/js/HuskyEZCreator.js" charset="utf-8"></script>
+        <!-- toast editor -->
+        <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+        <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
         <meta charset="UTF-8">
         <title>Title</title>
     </head>
@@ -13,19 +18,23 @@
                 <table class="table table-striped" style="text-align: center; border: 1px solid #dddddd">
                     <thead>
                         <tr>
-                            <th colspan="2" style="background-color: #eeeeee; text-align: center;">게시판 글쓰기 양식</th>
+                            <th colspan="2" style="text-align: center;">게시판 글쓰기 양식</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="text-align:left;">글 작성자 : [[${memberId}]]</td>
-                            <input type="hidden" class="form-control" placeholder="글 작성자" name="name" th:value="${memberId}" maxlength="50">
+                            <td style="text-align:left; background-color: #ffffff;">글 작성자 : [[${memberId}]]</td>
+                            <input type="hidden" class="form-control" name="name" th:value="${memberId}" maxlength="50">
                         </tr>
                         <tr>
                             <td><input type="text" class="form-control" placeholder="글 제목" name="title" maxlength="50"></td>
                         </tr>
                         <tr>
-                            <td><textarea class="form-control" placeholder="글 내용" name="content" maxlength="2048" style="height:350px;"></textarea></td>
+                            <td>
+                                <p id="tagForContent"></p>
+                                <!-- <textarea class="form-control" placeholder="글 내용" name="content" id="content" maxlength="2048" style="height:350px;"></textarea> -->
+                                <p id="editor" style="background-color: #ffffff;"></p>
+                            </td>
                         </tr>
                         <tr style="text-align:left">
                             <td>
@@ -35,9 +44,65 @@
                     </tbody>
                 </table>
                 <div style="text-align:right">
-                    <button type="submit" class="custom-btn btn-6">업로드</button>                
+                    <button type="button" class="custom-btn btn-6" id="uploadBtn">업로드</button>                
+                    <button type="submit" style="display:none" id="submitBtn"></button>
                 </div>                
             </form>
         </div>
     </body>
+    <script>
+        // toast editor
+        const Editor = toastui.Editor;
+        const editor = new Editor({
+            el: document.querySelector('#editor'),
+            height: '600px',
+            initialEditType: 'markdown',
+            previewStyle: 'vertical'
+        });
+
+        let uploadBtn = document.querySelector('#uploadBtn');
+        let submitBtn = document.querySelector('#submitBtn');
+        const sendHtml = function() {
+            let htmls  =editor.getHTML();
+            $("#tagForContent").html('<input type="hidden" name="content" value="' + htmls +'">');
+            // document.getElementById('tagForContent').html('<input type="hidden" name="content" value="' + htmls +'">');
+            console.log(document.getElementById('tagForContent'));
+            submitBtn.click();
+        }
+        uploadBtn.addEventListener('click', sendHtml);
+
+        seeHtml = function(){
+            alert(editor.getHTML());
+            let htmls  =editor.getHTML();
+            document.getElementById('tagForContent').html('<input type="hidden" name="content" value="' + htmls +'">');
+        }
+
+        seeMd = function(){
+            alert(editor.getMarkdown());
+        }
+        
+        // 네이버 에디터 version 2
+        // let oEditors = []
+
+        // smartEditor = function() {
+        //   console.log("Naver SmartEditor")
+        //   nhn.husky.EZCreator.createInIFrame({
+        //     oAppRef: oEditors,
+        //     elPlaceHolder: "content", // elPlaceHolder에는 textarea 태그의 id를 입력
+        //     sSkinURI: "/smarteditor/SmartEditor2Skin.html",
+        //     fCreator: "createSEditor2"
+        //   })
+        // }
+
+        // $(document).ready(function() {
+        //     smartEditor();
+        //     console.log(document.getElementsByTagName("iframe"));
+        //     console.log(document.getElementsByTagName("iframe")[0].contentWindow.document);
+        //     console.log(document.getElementsByTagName("iframe")[0].contentWindow.document.getElementsByTagName("iframe")[0]);
+        //     var textarea = $('iframe').contents().find("iframe").contents().find('.se2_inputarea');
+        //     console.log(textarea);
+        //     console.log(textarea.prevObject.prevObject.prevObject.prevObject.prevObject[0].children[0].children[1].children[0].children[0].children[0].children[1].children[2].children[0]);
+        // })
+
+    </script>
 </html>

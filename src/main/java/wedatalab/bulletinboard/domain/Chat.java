@@ -15,4 +15,9 @@ public class Chat {
     private Date chat_regdate;
     private String sliced_chat_regdate;
     private String sliced_chat_time;
+
+    public Chat(String sender, String receiver) {
+        this.sender = sender;
+        this.receiver = receiver;
+    }
 }
