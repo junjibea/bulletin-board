@@ -24,6 +24,9 @@
                     <tr>
                         <td style="display:inline-block">
                             <form th:action="@{chats}" method="get">
+                                <a th:each="sender :${sender}">
+                                    <input type="hidden" name="sender" th:value="${sender}">
+                                </a>
                                 <input type="hidden" name="receiver" th:value="${memberId}">
                                 <button class="btn-18" type="submit">MyChat</button>
                             </form>
@@ -36,6 +39,15 @@
                     </tr>
                 </table>
             </div>
+            <br>
+            <div style="display: flex; justify-content: center;">
+                <iframe width="460" height="258" src="https://www.youtube.com/embed/f02mOEt11OQ" 
+                title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+                </iframe>
+            </div>
+            <br>
+            <br>
             <div class="container">
                 <table class="float-right">
                     <tr>
@@ -62,6 +74,7 @@
                         <th style="text-align:center;">조회수</th>
                     </thead>
                     <tr th:each="list :${list}">
+                        <input type="hidden" id="boardId" name="boardId" value="${list.boardId}">
                         <td style="text-align:center;">[[${list.boardId}]]</td>
                         <td style="width:100%; text-align:center;" class="writerName" th:value="${list.name}">
                             <input type="hidden" name="name" th:value="${list.name}">
@@ -69,7 +82,7 @@
                             <span class="tooltiptext">
                                 <a class="specified">view | </a>
                                 <a class="chat">chat</a>
-                                <form th:action="chat" method="get">
+                                <form th:action="@{chat}" method="get">
                                     <button type="submit" style="display:none;" id="chat"></button>
                                     <input type="hidden" name="name" th:value="${list.name}">
                                     <input type="hidden" name="sender" th:value="${memberId}">

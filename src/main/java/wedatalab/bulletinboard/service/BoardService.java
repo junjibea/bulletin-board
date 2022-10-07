@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import wedatalab.bulletinboard.domain.Board;
 import wedatalab.bulletinboard.domain.Chat;
+import wedatalab.bulletinboard.domain.Gongji;
 import wedatalab.bulletinboard.domain.Member;
 import wedatalab.bulletinboard.domain.Pagination;
 import wedatalab.bulletinboard.mapper.BoardMapper;
@@ -175,7 +176,7 @@ public class BoardService {
     }
 
     // CHAT 내가 보낸 메시지 내용, 보낸 시간, 보낸 일자 띄우기
-    public List<String> getMyMessage(Chat chat) {
+    public List<Chat> getMyMessage(Chat chat) {
         return boardMapper.getMyMessage(chat);
     }
 
@@ -190,9 +191,9 @@ public class BoardService {
     // }
 
     // getCounterPartMessage
-    public List<String> getCounterPartMessage(Chat chat) {
-        return boardMapper.getCounterPartMessage(chat);
-    }
+    // public List<String> getCounterPartMessage(Chat chat) {
+    //     return boardMapper.getCounterPartMessage(chat);
+    // }
 
     // CHAT 주고받은 메시지 일자 띄우기
     public List<String> getAllMessageDate(Chat chat) {
@@ -200,13 +201,38 @@ public class BoardService {
     }
 
     // CHAT 내가 받은 메시지 모아보기
-    public List<String> getAllMessage(String receiver) {
-        return boardMapper.getAllMessage(receiver);
+    public List<Chat> getRecentMessage(Chat chat) {
+        return boardMapper.getRecentMessage(chat);
     }
 
     // CHAT 내게 메시지를 보낸 사람 리스트
     public List<String> getAllSenders(String receiver) {
         return boardMapper.getAllSenders(receiver);
+    }
+
+    // chat
+    public void insertGongji(Gongji gongji) {
+        boardMapper.insertGongji(gongji);
+    }
+
+    // chat
+    // public String selectGongji(Gongji gongji) {
+    //     return boardMapper.selectGongji(gongji);
+    // }
+
+    // chat
+    public Gongji selectGongji(Chat chat) {
+        return boardMapper.selectGongji(chat);
+    }
+
+    // chat
+    public int countGongji(Gongji gongji) {
+        return boardMapper.countGongji(gongji);
+    }
+
+    // chat
+    public void updateGongji(Gongji gongji) {
+        boardMapper.updateGongji(gongji);
     }
 
 }

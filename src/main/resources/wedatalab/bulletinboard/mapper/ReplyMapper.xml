@@ -3,7 +3,7 @@
 
 <mapper namespace="wedatalab.bulletinboard.mapper.ReplyMapper">
 
-<!-- 댓글 조회 -->
+	<!-- 댓글 조회 -->
 	<select id="getReply" parameterType="Long" resultType="wedatalab.bulletinboard.domain.Reply">
     	SELECT
     		  RNO, replyContent, WRITER, REGDATE, BOARDID
@@ -11,15 +11,15 @@
     	WHERE BOARDID = #{boardId} and PARENTID IS NULL
 	</select>
 
-<!-- 게시글, 댓글 조회 -->
+	<!-- 게시글, 댓글 조회 -->
 	<select id="getBoardAndReply" parameterType="Long" resultType="wedatalab.bulletinboard.domain.Board">
-		SELECT B.BOARDID, B.TITLE, B.CONTENT, B.NAME, B.READ, R.RNO, R.replyContent, R.WRITER, R.REGDATE, R.PARENTID
+		SELECT B.BOARDID, B.TITLE, B.CONTENT, B.NAME, R.RNO, R.replyContent, R.WRITER, R.REGDATE, R.PARENTID
 		FROM TBL_BOARD AS B
 		JOIN TBL_REPLY AS R
 		ON B.boardId = R.boardId and B.boardId = #{boardId};
 	</select>
 
-<!-- 댓글 boardId 넘기기 -->
+	<!-- 댓글 boardId 넘기기 -->
 	<select id="getBoardId" parameterType="Long" resultType="wedatalab.bulletinboard.domain.Reply">
     	SELECT
     		  BOARDID
@@ -27,13 +27,13 @@
     	WHERE BOARDID = #{boardId}
 	</select>
 
-<!-- 댓글 작성 -->
+	<!-- 댓글 작성 -->
 	<insert id="uploadReply" parameterType="wedatalab.bulletinboard.domain.Reply">
     	INSERT INTO TBL_REPLY(BOARDID, RNO, replyContent, WRITER)
 		VALUES(#{boardId}, tbl_reply_seq.nextval, #{replyContent}, #{writer});
 	</insert>
 
-<!-- 댓글 수정 -->
+	<!-- 댓글 수정 -->
 	<update id="updateReply">
     	UPDATE TBL_REPLY
 		SET 
@@ -41,19 +41,19 @@
 		WHERE RNO=#{rno}
 	</update>
 	
-<!-- 댓글 삭제 -->
+	<!-- 댓글 삭제 -->
 	<delete id="deleteReply" parameterType="Long">
     	DELETE FROM TBL_REPLY
 		WHERE RNO=#{rno} OR PARENTID=#{rno}
 	</delete>
 
-<!-- 대댓글 작성 -->
+	<!-- 대댓글 작성 -->
 	<insert id="uploadReplyReply" parameterType="wedatalab.bulletinboard.domain.Reply">
     	INSERT INTO TBL_REPLY(BOARDID, RNO, replyContent, WRITER, PARENTID)
 		VALUES(#{boardId}, tbl_reply_seq.nextval, #{replyContent}, #{writer}, #{parentId});
 	</insert>
 
-<!-- 대댓글 조회 -->
+	<!-- 대댓글 조회 -->
 	<select id="getReplyReply" parameterType="Long" resultType="wedatalab.bulletinboard.domain.Reply">
     	SELECT
     		  RNO, replyContent, WRITER, REGDATE, PARENTID

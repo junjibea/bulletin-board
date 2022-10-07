@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.nio.file.Path;
@@ -33,6 +34,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import wedatalab.bulletinboard.domain.Board;
 import wedatalab.bulletinboard.domain.Chat;
+import wedatalab.bulletinboard.domain.Gongji;
 import wedatalab.bulletinboard.domain.Member;
 import wedatalab.bulletinboard.domain.Pagination;
 import wedatalab.bulletinboard.domain.Reply;
@@ -86,7 +88,7 @@ public class BoardController {
                     ModelAndView MAV = new ModelAndView();
                     MAV.setViewName("boards/login");
                     return MAV;
-                }    
+                }
             } catch (Exception e) {
                 ModelAndView MAV = new ModelAndView();
                 return MAV;
@@ -105,7 +107,7 @@ public class BoardController {
         model.addAttribute("foundpw", service.getMemberPW(memberId));
         return "boards/findPW";
     }
-    
+
     // 회원가입
     @GetMapping("/join")
     public String SignUpForm() {
@@ -124,7 +126,6 @@ public class BoardController {
                 MessageDigest msg = MessageDigest.getInstance("SHA-512");
                 msg.update(pw_no_salt.getBytes());
                 hex = String.format("%128x", new BigInteger(1, msg.digest()));
-                System.out.println("hex : "+hex);
                 member.setPW(hex);
                 member.setSalt(salt);
                 service.signUp(member);
@@ -146,12 +147,11 @@ public class BoardController {
     public String logout(HttpServletRequest request) {
         HttpSession session = request.getSession();
         String memberId = (String)session.getAttribute("memberId");
-        System.out.println("memberId : " + memberId);
         session.removeAttribute(memberId);
         service.logout(memberId);
         return "redirect:/board/login";
     }
-    
+
     // 게시글 목록
     @GetMapping("/main")
     public String main(Model model, HttpServletRequest request, HttpServletResponse response,
@@ -160,8 +160,10 @@ public class BoardController {
         // 로그인
         HttpSession session = request.getSession();
         String memberId = (String)session.getAttribute("memberId"); // 로그인 시 입력한 아이디 가져오기
-        System.out.println("memberId: "+memberId);
         model.addAttribute("memberId", memberId);
+        String receiver = memberId;
+
+        model.addAttribute("sender", service.getAllSenders(receiver));
         String isLoggedIn = service.getLoggedIn(memberId);
         if(isLoggedIn.equals("Y")) {
             // 게시글 페이징 처리
@@ -190,7 +192,6 @@ public class BoardController {
                     model.addAttribute("curPage", pagination.curPage);
                     // 전체 게시글 데이터를 list 라는 모델 객체에 담기
                     model.addAttribute("list", service.boardList(pagination));
-                    System.out.println("list : "+service.boardList(pagination));
 
                     // 현재 블럭
                     pagination.curRange = curRange;
@@ -234,38 +235,64 @@ public class BoardController {
 
     // 채팅하기
     @GetMapping("/chat")
-    public String chatForm(HttpServletRequest request, Model model, Chat chat, String name) {
+    public String chatForm(HttpServletRequest request, Model model, Chat chat, String receiver, String gongjiText, Gongji gongji) {
         // 로그인
         HttpSession session = request.getSession();
         String memberId = (String)session.getAttribute("memberId"); // 로그인 시 입력한 아이디 가져오기
-        System.out.println("memberId:  "+memberId);
         model.addAttribute("memberId", memberId);
-        model.addAttribute("name", name);
+        model.addAttribute("name", receiver);
+        model.addAttribute("gongjiText", service.selectGongji(chat));
         // 전체 채팅 데이터를 chat_list 라는 모델 객체에 담기
         model.addAttribute("my_chat_list", service.getMyMessage(chat));
-        // model.addAttribute("chat_date", service.getMessageDate(chat));
-        model.addAttribute("counterpart_chat_list", service.getCounterPartMessage(chat));
         model.addAttribute("all_chat_date", service.getAllMessageDate(chat));
-        System.out.println("service.getMessage(chat) : "+service.getMyMessage(chat));
         List<String> sliced_chat_content = new ArrayList<String>();
-        System.out.println("sliced_chat_content : "+sliced_chat_content);
         model.addAttribute("chat_content", sliced_chat_content);
         return "boards/chat";
     }
 
+    @GetMapping("/edit")
+    public String edit() {
+        return "boards/editor";
+    }
+
     @PostMapping("/chat")
-    public String chat(Model model, Chat chat, String sender, String receiver) {
-        model.addAttribute("name", receiver);
+    public String chat(Model model, Chat chat) {
+        model.addAttribute("name", chat.getReceiver());
         service.uploadChat(chat);
-        return "redirect:/board/chat?name="+receiver+"&sender="+sender+"&receiver="+receiver;
+        return "redirect:/board/chat?name="+chat.getReceiver()+"&sender="+chat.getSender()+"&receiver="+chat.getReceiver();
+    }
+
+    @PostMapping("/gongji")
+    public String gongji(HttpServletRequest request, HttpServletResponse response, Model model, Gongji gongji) throws UnsupportedEncodingException {
+        // 이미 등록된 공지가 있으면 그 공지 내용을 바꾸기
+        if(service.countGongji(gongji)>0) {
+            service.updateGongji(gongji);
+        }
+        // 등록된 공지가 없으면 새로 공지 내용 등록하기
+        else {
+            service.insertGongji(gongji);
+        }
+        // url 에 한글이 포함되어 있으면 encoding 해야 함
+        String encodedGongjiText = URLEncoder.encode(gongji.getGongji_content(), "UTF-8");
+        return "redirect:/board/chat?name="+gongji.getReceiver()+"&sender="+gongji.getSender()+"&receiver="+gongji.getReceiver()+"&gongjiText="+encodedGongjiText;
     }
 
     @GetMapping("/chats")
-    public String chats(Model model, String receiver) {
-        model.addAttribute("AllMessageList",service.getAllMessage(receiver));
-        model.addAttribute("AllSendersList",service.getAllSenders(receiver));
-        // System.out.println("service.getAllSenders(receiver) : "+service.getAllSenders(receiver).get(0));
-        // System.out.println("service.getAllSenders(receiver) : "+service.getAllSenders(receiver).get(1));
+    public String chats(Model model, HttpServletRequest request, String receiver, Chat senderListChat) {
+        model.addAttribute("receiver",receiver);
+         // 리스트인 경우 ',' 포함
+        if(senderListChat.getSender().contains(",")) {
+            String[] senderList = senderListChat.getSender().split(",");
+            // sender 리스트 안 각각의 sender 들과 주고받은 최신 메시지 가져오기
+            for (String sender : senderList) {
+                Chat chat = new Chat(sender, senderListChat.getReceiver());
+                model.addAttribute("getRecentMessage",service.getRecentMessage(chat));
+            }
+        } else {
+            // 사용자와 채팅을 주고받은 사람이 한명인 경우
+            Chat chat = new Chat(senderListChat.getSender(), senderListChat.getReceiver());
+            model.addAttribute("getRecentMessage",service.getRecentMessage(chat));
+        }
         return "boards/MyChat";
     }
 
@@ -275,7 +302,6 @@ public class BoardController {
         // 로그인 되지 않았을 경우 url 로 접근할 수 없도록
         HttpSession session = request.getSession();
         String memberId = (String)session.getAttribute("memberId");
-        System.out.println("memberId: "+memberId);
         model.addAttribute("memberId", memberId);
         String isLoggedIn = service.getLoggedIn(memberId);
         if(isLoggedIn.equals("Y")) {
@@ -293,10 +319,6 @@ public class BoardController {
             model.addAttribute("orgFileName", service.getOrgFileNameList(boardId));
             model.addAttribute("storedFileName", service.getStoredFileNameList(boardId));
             model.addAttribute("file_no", service.getOrgFileNum(boardId));
-            System.out.println("boardId:  "+boardId);
-            System.out.println(service.getOrgFileNameList(boardId));
-            System.out.println(service.getStoredFileNameList(boardId));
-            System.out.println(service.getOrgFileNum(boardId));
             return "boards/view";
         } else {
             try {
@@ -340,28 +362,22 @@ public class BoardController {
         if((!board.getContent().isEmpty())&&(!board.getTitle().isEmpty())){
             service.uploadBoard(board);
             Path path = Paths.get(System.getProperty("user.dir")+"//pic");
-            System.out.println("path: "+path);
             MultipartFile checkUpload = mtfRequest.getFile("file"); // 파일 없이 게시글 업로드 하는 경우 !checkUpload.isEmpty() == false
-            if(!checkUpload.isEmpty()){
-                System.out.println("파일과 함께 게시글 업로드하는 경우");
+            if(!checkUpload.isEmpty()) {
+                // 파일과 함께 게시글 업로드하는 경우
                 List<MultipartFile> multipartFile = mtfRequest.getFiles("file"); // 첨부하는 파일 리스트
-                System.out.println(multipartFile);
                 for (MultipartFile file : multipartFile){ // 첨부하는 파일 리스트 개수대로 업로드 반복
                     String filename = file.getOriginalFilename();
-                    System.out.println("filename:   "+filename);
                     // 파일 확장자
                     String extension = filename.substring(filename.lastIndexOf("."), filename.length());
                     UUID uuid = UUID.randomUUID();
                     String storedFilename = uuid.toString() + extension;
-                    System.out.println("storedFilename:   "+storedFilename);
                     String uploadPath = path +"\\"+ storedFilename;
-                    System.out.println("uploadPath : "+ uploadPath);
                     // 파일을 저장하기 위한 파일 객체 생성
                     File files = new File(uploadPath);
                     try {
                         // 파일 저장
                         file.transferTo(files);
-                        System.out.println(file);
                     } catch (IllegalStateException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
@@ -370,16 +386,11 @@ public class BoardController {
                     Long boardId = board.getBoardId();
                     ArrayList<String> fileList = new ArrayList<String>();
                     HashMap<String,ArrayList<String>> commandMap = new HashMap<String, ArrayList<String>>();
-                    System.out.println(boardId.toString());
-                    System.out.println(filename);
-                    System.out.println(storedFilename);
-                    System.out.println(uploadPath);
                     fileList.add(boardId.toString());
                     fileList.add(filename);
                     fileList.add(storedFilename);
                     fileList.add(uploadPath);
                     commandMap.put("fileList", fileList);
-                    System.out.println(commandMap);
                     service.uploadFile(commandMap);
                 }
             }
@@ -403,38 +414,27 @@ public class BoardController {
         ArrayList<HashMap<String, String>> orgFileNameList = service.getOrgFileName(file_no); // [ORG_FILE_NAME=test.jpg] 형태
         ArrayList<HashMap<String, String>> storedFileNameList = service.getStoredFileName(file_no); // [STORED_FILE_NAME=08db1611-a33d-44a7-b596.jpg] 형태
         ArrayList<HashMap<String, String>> filePathList = service.getFilePath(file_no);
-        System.out.println(orgFileNameList);
-        System.out.println(orgFileNameList.get(0));
-        String type = orgFileNameList.getClass().getName();
-        System.out.println("type : "+type);
-        System.out.println("get 0 type : "+orgFileNameList.get(0).getClass().getName());
-        System.out.println(orgFileNameList.get(0).keySet()); // [ORG_FILE_NAME=test.jpg] 에서 [ORG_FILE_NAME] 에 해당
-        for (String key : orgFileNameList.get(0).keySet()) {
+        for (String key : orgFileNameList.get(0).keySet()) { // [ORG_FILE_NAME=test.jpg] 에서 [ORG_FILE_NAME] 에 해당
             String orgFileName = service.getOrgFileName(file_no).get(0).get(key); // [ORG_FILE_NAME] 라는 키에 해당하는 value 반환
             // 제목이 한글로 된 파일 다운 받을 수 있도록 URLEncoder.encode 사용
             try {
                 orgFileName = URLEncoder.encode(orgFileName, "UTF-8");
             } catch (Exception e) {}
-            System.out.println("orgFileName : "+orgFileName);
-            System.out.println(storedFileNameList.get(0).keySet()); // [STORED_FILE_NAME=test.jpg] 에서 [STORED_FILE_NAME] 에 해당
-            for (String storedFileKey : storedFileNameList.get(0).keySet()) {
-                String storedFileName = service.getStoredFileName(file_no).get(0).get(storedFileKey); // [STORED_FILE_NAME] 라는 키에 해당하는 value 반환
-                System.out.println("storedFileName : "+storedFileName);
+            for (String storedFileKey : storedFileNameList.get(0).keySet()) { // [STORED_FILE_NAME=test.jpg] 에서 [STORED_FILE_NAME] 에 해당
                 String contentType = "image/jpg";
                 for (String filePath : filePathList.get(0).keySet()) {
                     String path = service.getFilePath(file_no).get(0).get(filePath);
-                    System.out.println("path : "+path);
                     File file = new File(path);
                     Long fileLength = file.length();
                     // 파일의 크기와 같지 않을 경우 프로그램이 멈추지 않고 계속 실행되거나, 잘못된 정보가 다운로드 될 수 있다.
-    
+
                     response.setHeader("Content-Disposition", "attachment; filename=\"" + orgFileName + "\";"); // 원래 파일 제목 - 사용자에게 uuid 는 알아보기 어렵기 때문에 알아보기 쉬운 원래 파일 제목을 보여줌
                     response.setHeader("Content-Transfer-Encoding", "binary");
                     response.setHeader("Content-Type", contentType);
                     response.setHeader("Content-Length", "" + fileLength);
                     response.setHeader("Pragma", "no-cache;");
                     response.setHeader("Expires", "-1;");
-                    
+
                     try(
                         FileInputStream fis = new FileInputStream(path);
                         OutputStream out = response.getOutputStream();
@@ -459,26 +459,20 @@ public class BoardController {
         HttpSession session = request.getSession();
         String memberId = (String)session.getAttribute("memberId"); // 로그인 시 입력한 아이디 가져오기
         // String writer 파라미터가 아니라 컨트롤러 내에서 메소드로 받아오는 방법으로 구현하기
-        System.out.println("memberId: "+memberId);
         model.addAttribute("memberId", memberId);
         String isLoggedIn = service.getLoggedIn(memberId);
-        System.out.println("isLoggedIn : "+isLoggedIn);
         System.out.println("writer : "+writer); // 파라미터로 받아오지 않기
         if(isLoggedIn.equals("Y")) {
             if(writer.equals(memberId)) {
                 model.addAttribute("update", service.getBoard(boardId));
-                System.out.println("update : "+service.getBoard(boardId));
                 // update 페이지에 기존 파일 띄우기 (게시글 수정 전에도 이미 첨부되어 있는 파일들)
                 model.addAttribute("orgFileName", service.getOrgFileNameList(boardId));
                 model.addAttribute("storedFileName", service.getStoredFileNameList(boardId));
                 model.addAttribute("orgFileNum", service.getOrgFileNum(boardId));
-                System.out.println(service.getOrgFileNameList(boardId));
-                System.out.println(service.getStoredFileNameList(boardId));
-                System.out.println(service.getOrgFileNum(boardId));
                 return "/boards/update";
             } else {
                 try {
-                    System.out.println("getmapping - update");
+                    // getmapping - update
                     response.setContentType("text/html; charset=euc-kr");
                     PrintWriter out = response.getWriter();
                     out.println("<script>alert('수정 권한이 없습니다.'); location.href='/board/view?boardId="+boardId+"';</script>");
@@ -509,21 +503,18 @@ public class BoardController {
             MultipartFile checkUpload = mtfRequest.getFile("file"); // 새로 파일을 업로드 하는지 확인하기 위한 객체
             // 파일 없이 게시글 업로드 하는 경우 !checkUpload.isEmpty() == false -> 아래 코드 전체 실행하지 않음
             if(!checkUpload.isEmpty()){
-                System.out.println("수정 페이지에서 파일이 새로 첨부된 경우");
+                // 수정 페이지에서 파일이 새로 첨부된 경우
                 List<MultipartFile> multipartFile = mtfRequest.getFiles("file"); // 첨부된 파일 리스트
                 ArrayList<HashMap<String,String>> fileMaps = service.getStoredFileNameList(boardId); // hashmap 으로 이루어진 파일들 리스트
                 if(!fileMaps.isEmpty()){
-                    System.out.println("기존에 첨부된 파일이 있는 경우");
+                    // 기존에 첨부된 파일이 있는 경우
                     // 기존 파일 삭제 시작
                     int fileCnt = fileMaps.size(); // 기존 파일 개수
-                    System.out.println(fileCnt);
                     for(int i=0; i<fileCnt; i++) { // 기존 파일 개수만큼 아래 삭제 메소드 반복
                         for ( String key : fileMaps.get(i).keySet() ) { // 파일 map 의 키 (stored_file_name)
-                            System.out.println(service.getStoredFileNameList(boardId).get(i).get(key)); // 키에 해당하는 값 (서버에 저장된 파일 이름 - 확장자 포함)
-                            String storedFileName = service.getStoredFileNameList(boardId).get(i).get(key);
-                            Path path = Paths.get(System.getProperty("user.dir")+"//pic");              
+                            String storedFileName = service.getStoredFileNameList(boardId).get(i).get(key);// 키에 해당하는 값 (서버에 저장된 파일 이름 - 확장자 포함)
+                            Path path = Paths.get(System.getProperty("user.dir")+"//pic");
                             String String_path = path + "\\" + storedFileName;
-                            System.out.println(String_path);
                             File files = new File(String_path);
                             if(files.exists()) { // 파일이 존재하면
                                 files.delete(); // 파일 삭제
@@ -531,43 +522,35 @@ public class BoardController {
                         }
                     }
                     service.deleteFile(boardId); // H2 데이터베이스에서 해당 게시글에 딸린 기존 파일 삭제
-                    // 기존 파일 삭제 끝
-                    
-                    // 새 파일 업로드 시작
+                    // 기존 파일 삭제 끝, 새 파일 업로드 시작
                     for (MultipartFile file : multipartFile){
                         Path path = Paths.get(System.getProperty("user.dir")+"//pic");
                         String filename = file.getOriginalFilename();
                         // 파일 확장자
                         String extension = filename.substring(filename.lastIndexOf("."), filename.length());
-                        System.out.println("filename:   "+filename);
                         UUID uuid = UUID.randomUUID();
                         String storedFilename = uuid.toString() + extension;
-                        System.out.println("storedFilename:   "+storedFilename);              
                         String uploadPath = path  +"\\" + storedFilename;
                         File files = new File(uploadPath);
                         try {
                             // 파일 저장
                             file.transferTo(files);
-                            System.out.println(file);
                         } catch (IllegalStateException e) {
                             e.printStackTrace();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        System.out.println(boardId+"ccc");
                         ArrayList<String> fileList = new ArrayList<String>();
                         fileList.add(boardId.toString());
                         fileList.add(filename);
                         fileList.add(storedFilename);
                         fileList.add(uploadPath);
-                        System.out.println(fileList);
                         HashMap<String,ArrayList<String>> commandMap = new HashMap<String, ArrayList<String>>();
                         commandMap.put("fileList", fileList);
-                        System.out.println(commandMap);
                         service.uploadFile(commandMap);
                     } // 새 파일 업로드 끝
                 } else {
-                    System.out.println("기존에 첨부된 파일이 없는데 새로 추가하는 경우");
+                    // 기존에 첨부된 파일이 없는데 새로 추가하는 경우
                     for (MultipartFile file : multipartFile){
                         Path path = Paths.get(System.getProperty("user.dir")+"//pic");  
                         String filename = file.getOriginalFilename();
@@ -575,13 +558,11 @@ public class BoardController {
                         String extension = filename.substring(filename.lastIndexOf("."), filename.length());
                         UUID uuid = UUID.randomUUID();
                         String storedFilename = uuid.toString() + extension;
-                        System.out.println("storedFilename:   "+storedFilename);
                         String uploadPath = path +"\\"+ storedFilename;
                         File files = new File(uploadPath);
                         try {
                             // 파일 저장
                             file.transferTo(files);
-                            System.out.println(file);
                         } catch (IllegalStateException e) {
                             e.printStackTrace();
                         } catch (IOException e) {
@@ -621,7 +602,6 @@ public class BoardController {
         // 로그인 되지 않았을 경우 url 로 접근할 수 없도록
         HttpSession session = request.getSession();
         String memberId = (String)session.getAttribute("memberId"); // 로그인 시 입력한 아이디 가져오기
-        System.out.println("memberId: "+memberId);
         model.addAttribute("memberId", memberId);
         String isLoggedIn = service.getLoggedIn(memberId);
         if(isLoggedIn.equals("Y")) {
@@ -631,12 +611,9 @@ public class BoardController {
                 int fileCnt = fileMaps.size(); // 파일 개수
                 for(int i=0; i<fileCnt; i++) { // 파일 개수만큼 반복
                     for ( String key : fileMaps.get(i).keySet() ) { // 파일 map 의 키 (stored_file_name)
-                        System.out.println(service.getStoredFileNameList(boardId).get(i).get(key)); // 키에 해당하는 값 (서버에 저장된 파일 이름 - 확장자 포함)
-                        String storedFileName = service.getStoredFileNameList(boardId).get(i).get(key);
+                        String storedFileName = service.getStoredFileNameList(boardId).get(i).get(key); // 키에 해당하는 값 (서버에 저장된 파일 이름 - 확장자 포함)
                         Path path = Paths.get(System.getProperty("user.dir")+"//pic");
                         String String_path = path + "\\" + storedFileName;
-
-                        System.out.println(String_path);
                         File files = new File(String_path);
                         if(files.exists()) { // 파일이 존재하면
                             files.delete(); // 파일 삭제
@@ -683,7 +660,6 @@ public class BoardController {
         // 로그인 되지 않았을 경우 url 로 접근할 수 없도록
         HttpSession session = request.getSession();
         String memberId = (String)session.getAttribute("memberId"); // 로그인 시 입력한 아이디 가져오기
-        System.out.println("memberId: "+memberId);
         model.addAttribute("memberId", memberId);
         String isLoggedIn = service.getLoggedIn(memberId);
         if(isLoggedIn.equals("Y")) {

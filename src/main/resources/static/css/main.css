@@ -162,6 +162,10 @@
   .btn-16:active {
     top: 2px;
   }
+  .btn-16:focus { 	
+    border: none;
+    outline:none;
+  }
   .btn-17 {
     border: none;
     color: #000;
@@ -206,6 +210,10 @@
   .btn-17:active {
     top: 2px;
   }
+  .btn-17:focus { 	
+    border: none;
+    outline:none;
+  }
   .btn-18 {
     border: none;
     color: rgb(13, 16, 230);
@@ -249,4 +257,8 @@
   }
   .btn-18:active {
     top: 2px;
+  }
+  .btn-18:focus { 	
+    border: none;
+    outline:none;
   }

@@ -8,6 +8,13 @@
         <title>Chat</title>
     </head>
     <body id="chat-screen">
+        <table class="table table-hover" th:each="all_chat_date :${all_chat_date}" style="display:none">
+            <input type="hidden" class="all_chat_date" th:value="${all_chat_date}">
+        </table>
+        <input type="hidden" class="name" th:value="${name}">
+        <a th:if="${gongjiText}">
+            <input type="hidden" id="gongjiText" th:value="${gongjiText.gongji_content}">
+        </a>
         <div class="status-bar">
             <div class="status-bar__column">
                 <i class="fas fa-wifi"></i>
@@ -27,11 +34,11 @@
         <header class="alt-header">
             <div class="alt-header__column"><a href="chats.html"><i class="fas fa-angle-left fa-3x"></i></a></div>
             <div class="alt-header__column">
-                <form th:action="@{main}" method="get" style="display:inline-block">
-                    <button type="submit" class="custom-btn btn-16">
-                        <span class="glyphicon glyphicon-chevron-left"></span>
-                    </button>                        
-                </form>
+                <button type="submit" class="custom-btn btn-16" id="goBackBtn">
+                    <span class="glyphicon glyphicon-chevron-left">
+                        <a href="javascript:history.back();" id="goBackHref"></a>
+                    </span>
+                </button>
                 <h1 class="alt-header__title" style="display:inline-block;text-align:center;">[[${name}]]</h1>
             </div>
             <div class="alt-header__column">
@@ -39,57 +46,104 @@
                 <span><i class="fas fa-bars fa-2x"></i></span>
             </div>
         </header>
-        <main class="main-screen main-chat" th:each="all_chat_date :${all_chat_date}">
-            <div style="text-align:center">
-                <span class="chat__timestamp">
-                    [[${all_chat_date.sliced_chat_regdate}]]
+        <div id="ajax">
+            <div style="background-color: #fff" id="gongji" th:if="${gongjiText}">
+                <span style="margin-left: 7px;">🌐</span>
+                <span>
+                    <h5 style="display: inline-block; margin-left: 5px;">[[${gongjiText.gongji_content}]]</h5>
                 </span>
             </div>
-            <!-- receiver -->
-            <span th:each="counterpart_chat_list :${counterpart_chat_list}">
-                <div class="message-row" th:if="${all_chat_date.sliced_chat_regdate}==${counterpart_chat_list.sliced_chat_regdate}">
-                    <img src="https://w.namu.la/s/059f8bf3e629d3f2e343fe3f3f10809022d58800962db675d233429660bf98d9ceccd60e23b1324d090c87485833b10c2c4503c93a230003ba67d5fcafa5279363109421af717958648690d0e71b46711c6c20c1d28b92d27975a3e9e56cd6a0"/>
-                    <div class="message-row__content">
-                        <span class="message__author">[[${name}]]</span>
-                        <div class="message__info">
-                            <span class="message__bubble">[[${counterpart_chat_list.chat_content}]]</span>
-                            <span class="message__time">[[${counterpart_chat_list.sliced_chat_time}]]</span>
+            <div id="chats" style="margin-top: 60px;">
+                <main class="main-screen main-chat" th:each="all_chat_date :${all_chat_date}">
+                    <div style="text-align:center;">
+                        <span class="chat__timestamp">
+                            [[${all_chat_date}]]
+                        </span>
+                    </div>
+                    <br>
+                    <!-- receiver -->
+                    <!-- 상대가 보낸 메시지 -->
+                    <span th:each="my_chat_list :${my_chat_list}">
+                        <!-- 카톡 보낸 사람이 이 채팅방 클릭 전 게시글 작성자일 경우 -->
+                        <div class="message-row" th:if="(${all_chat_date}==${my_chat_list.sliced_chat_regdate}) and (${my_chat_list.sender}==${name})">
+                            <img src="https://play-lh.googleusercontent.com/Ob9Ys8yKMeyKzZvl3cB9JNSTui1lJwjSKD60IVYnlvU2DsahysGENJE-txiRIW9_72Vd"/>
+                            <div class="message-row__content">
+                                <span class="message__author">[[${name}]]</span>
+                                <button class="tooltip">
+                                    <!--  tooltip-top -->
+                                    <span class="tooltiptext">위쪽 툴팁</span>
+                                </button>
+                                <div class="message__info">
+                                    <!-- <div class="inner-container">
+                                        <span class="tooltiptext">
+                                            <a class="specified">view | </a>
+                                            <a class="chat">chat</a> -->
+                                            <!-- <form th:action="@{chat}" method="get">
+                                                <button type="submit" style="display:none;" id="chat"></button>
+                                            </form> -->
+                                        <!-- </span> -->
+                                    <!-- </div> -->
+                                    <span class="message__bubble">[[${my_chat_list.chat_content}]]</span>
+                                    <span class="message__time">[[${my_chat_list.sliced_chat_time}]]</span>
+                                    <button class="gongji" style="margin-bottom:9px; font-size:7px; background-color: transparent; border: none;">공지</button>
+                                    <form th:action="@{gongji}" method="post">
+                                        <input type="hidden" name="GONGJI_CONTENT" th:value="${my_chat_list.chat_content}">
+                                        <input type="hidden" name="SENDER" th:value="${memberId}">
+                                        <input type="hidden" name="RECEIVER" th:value="${name}">
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>    
-            </span>
-            <!-- sender (로그인한 사용자) -->
-            <div class="message-row message-row--own">
-                <div class="message-row__content">
-                    <div class="message__info" th:each="my_chat_list :${my_chat_list}">
-                        <span class="message__bubble" th:if="${all_chat_date.sliced_chat_regdate}==${my_chat_list.sliced_chat_regdate}">[[${my_chat_list.chat_content}]]</span>
-                        <span class="message__time" th:if="${all_chat_date.sliced_chat_regdate}==${my_chat_list.sliced_chat_regdate}">[[${my_chat_list.sliced_chat_time}]]</span>
-                    </div>
-                </div>
-            </div>
-        </main>
-        <form class="reply" th:action="@{chat}" method="post">
+                        <!-- 카톡 보낸 사람이 로그인한 사용자일 경우 -->
+                        <div class="message-row message-row--own" th:if="(${all_chat_date}==${my_chat_list.sliced_chat_regdate}) and (${my_chat_list.sender}==${memberId})">
+                            <div class="message-row__content">
+                                <div class="message__info" th:each="my_chat_list :${my_chat_list}">
+                                    <!-- <div class="inner-container">
+                                        <span class="tooltiptext">
+                                            <a class="specified">view | </a>
+                                            <a class="chat">chat</a> -->
+                                            <!-- <form th:action="@{chat}" method="get">
+                                                <button type="submit" style="display:none;" id="chat"></button>
+                                            </form> -->
+                                        <!-- </span>
+                                    </div> -->
+                                    <span class="message__bubble">[[${my_chat_list.chat_content}]]</span>
+                                    <span class="message__time">[[${my_chat_list.sliced_chat_time}]]</span>
+                                    <button class="gongji" style="margin-bottom:9px; font-size:7px; background-color: transparent; border: none;">공지</button>
+                                    <form th:action="@{gongji}" method="post">
+                                        <input type="hidden" name="gongji_content" th:value="${my_chat_list.chat_content}">
+                                        <input type="hidden" name="sender" th:value="${memberId}">
+                                        <input type="hidden" name="receiver" th:value="${name}">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>    
+                    </span>
+                </main>
+            </div>    
+        </div>
+        <!-- 채팅 입력칸 -->
+        <form class="reply" autocomplete="off">
             <div class="reply__column">
                 <i class="far fa-plus-square fa-lg"></i>
             </div>
             <div class="reply__column">
-                <input type="hidden" name="receiver" th:value="${name}">
-                <input type="hidden" name="sender" th:value="${memberId}">
-                <input type="text" name="chat_content" id="chat_content" placeholder="Write a message..."/>
-                <i id="icon-push" class="far fa-grin fa-lg"></i>
-                <button>
-                    <i class="fas fa-arrow-up"></i>
-                </button>
+                <form th:action="@{chat}" method="post">
+                    <input type="hidden" id="receiver" name="receiver" th:value="${name}">
+                    <input type="hidden" name="sender" id="memberId" th:value="${memberId}">
+                    <input type="text" name="chat_content" id="chat_content" placeholder="Write a message..." 
+                    onkeypress="if(event.keyCode=='13'){event.preventDefault(); uploadChat();}"/> <!-- 엔터키 누르면 uploadChat 실행하기 -->
+                </form>
+                <button id="sendChat" type="button"></button>
             </div>
         </form>
     </body>
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <!-- <script src="https://kit.fontawesome.com/a9eb1f10be.js" crossorigin="anonymous"> -->
-    <script>
-        const chat_content = document.getElementById('chat_content');
+    <script type="text/javascript">
+        
         // 오늘 날짜
         let date = new Date();
-        // 오늘 날짜
+        // 오늘 날짜 구하기
         function getToday(){
             let year = date.getFullYear();
             let month = ("0" + (1 + date.getMonth())).slice(-2);
@@ -99,11 +153,310 @@
         };
 
         function getTime() {
+            let date = new Date();
             let hours = date.getHours();
-            let minutes = date.getMinutes();
+            let minutes = ("0"+date.getMinutes()).slice(-2);
 
             return hours + ":" + minutes;
         }
+        
+        function seta(){
+            $("#time").html(getTime());
+        }
+        function setRealTime(){
+            setInterval(seta,1000);
+        }     
         $("#time").html(getTime());
+        setRealTime();
+
+        // 채팅 화면에서 이전페이지로 돌아가기 기능
+        let goBackBtn = document.getElementById("goBackBtn");
+        let goBackHref = document.getElementById("goBackHref");
+        const goToBackPage = () => {
+            goBackHref.click();
+        }
+        goBackBtn.addEventListener("click", goToBackPage);
+
+        // ajax 에 필요한 변수들
+        let memberId = document.getElementById('memberId');
+        let gongjiBtn = document.getElementsByClassName('gongji'); // '공지' 라고 쓰여있는 버튼
+        let sendChatBtn = document.getElementById('sendChat'); // 채팅 전송 버튼
+
+        // ajax 로 공지 업로드 하는 메소드
+        const uploadGongji = (e) => {
+            let gongji_content_to_put = $(e.target)[0].parentNode.children[3].children[0].value;
+            let sender_to_put = $(e.target)[0].parentNode.children[3].children[1].value;
+            let receiver_to_put = $(e.target)[0].parentNode.children[3].children[2].value;
+            console.log(gongji_content_to_put, sender_to_put, receiver_to_put);
+            gongjiJson(gongji_content_to_put, sender_to_put, receiver_to_put);
+        }
+        for (let i = 0; i < gongjiBtn.length; i++) {
+            gongjiBtn[i].addEventListener('click', uploadGongji);
+        }
+
+        // ajax 로 댓글 업로드 하는 메소드
+        const uploadChat = (e) => {
+            let receiver_to_put = document.getElementById('receiver').value;
+            let sender_to_put = document.getElementById('memberId').value;
+            let chat_content_to_put = document.getElementById('chat_content').value;
+            console.log(receiver_to_put, sender_to_put, chat_content_to_put);
+            chatJson(receiver_to_put, sender_to_put, chat_content_to_put);
+        }
+        sendChatBtn.addEventListener('click', uploadChat);
+
+        // ajax 로 공지 업로드 하는 메소드
+        function gongjiJson(gongji_content_to_put, sender_to_put, receiver_to_put) {
+            let gongji_content = gongji_content_to_put;
+            let sender = sender_to_put;
+            let receiver = receiver_to_put;
+            let gongjiData = {"gongji_content" : gongji_content, "sender": sender, "receiver": receiver};
+            let memberId_to_put = document.getElementById('memberId').value;
+            
+            $.ajax({
+                url:"/board/ajaxInsertGongji",
+                async : false,
+                type: "GET",
+                dataType: "json",
+                data: gongjiData,
+                cache: false,
+                success: function (data){
+                    console.log(data);
+                    let all_chat_date = data[1];
+                    let name = receiver;
+                    let memberId = memberId_to_put;
+                    let isGongji = true;
+                    ajaxHtml(data, all_chat_date, name, memberId, isGongji)
+                },
+                error: function(){alert("error");}
+            });
+        }
+
+        // ajax 로 댓글 업로드 하는 메소드
+        function chatJson(receiver_to_put, sender_to_put, chat_content_to_put) {
+            let receiver = receiver_to_put;
+            let sender = sender_to_put;
+            let chat_content = chat_content_to_put;
+            let chatData = {"receiver": receiver, "sender": sender, "chat_content" : chat_content};
+            let memberId_to_put = document.getElementById('memberId').value;
+            
+            $.ajax({
+                url:"/board/ajaxUploadChat",
+                async : false,
+                type: "POST",
+                dataType: "json",
+                data: chatData,
+                cache: false,
+                success: function (data){
+                    let all_chat_date = data[0];
+                    let name = receiver;
+                    let memberId = memberId_to_put;
+                    let isGongji = false;
+                    ajaxHtml(data, all_chat_date, name, memberId, isGongji)
+                },
+                error: function(){alert("error");}
+            });
+        }
+
+        // <div id="ajax"></div> 혹은 <div id="chats"></div> 에 그릴 html
+        function ajaxHtml(data, all_chat_date, name, memberId, isGongji) {
+            let chatHtml = '';
+            // 공지 업로드 할 때
+            if(isGongji==true) {
+                chatHtml += '<div style="background-color: #fff" id="gongji">';
+                    chatHtml += '<span style="margin-left: 7px;">🌐</span>';
+                    chatHtml += '<span>';
+                        chatHtml += '<h5 style="display: inline-block; margin-left: 5px;">'+data[0]+'</h5>'; // 공지 텍스트
+                    chatHtml += '</span>';
+                chatHtml += '</div>';
+                chatHtml += '<div id="chats" style="margin-top: 60px;">';
+                    chatHtml += '<main class="main-screen main-chat">';
+                        for (let i = 0; i < all_chat_date.length; i++) {
+                            chatHtml += '<div style="text-align:center;">';
+                                chatHtml += '<br>';
+                                chatHtml += '<span class="chat__timestamp">';
+                                chatHtml += all_chat_date[i];
+                                chatHtml += '</span>';
+                            chatHtml += '</div>';
+                            chatHtml += '<br>';
+                            chatHtml += '<span>';
+                                for (let j = 0; j < data[2].length; j++) {
+                                    if(all_chat_date[i]==data[2][j].sliced_chat_regdate && data[2][j].sender==name) {
+                                        chatHtml += '<div class="message-row">';
+                                            chatHtml += '<img src="https://play-lh.googleusercontent.com/Ob9Ys8yKMeyKzZvl3cB9JNSTui1lJwjSKD60IVYnlvU2DsahysGENJE-txiRIW9_72Vd"/>';
+                                            chatHtml += '<div class="message-row__content">';
+                                                chatHtml += '<span class="message__author">'+name+'</span>';
+                                                chatHtml += '<div class="message__info">';
+                                                    chatHtml += '<span class="message__bubble">'+data[2][j].chat_content+'</span>';
+                                                    chatHtml += '<span class="message__time">'+data[2][j].sliced_chat_time+'</span>';
+                                                    chatHtml += '<button class="gongji" style="margin-bottom:9px; font-size:7px; background-color: transparent; border: none;">공지</button>';
+                                                    chatHtml += '<form action="gongji" method="post">';
+                                                        chatHtml += '<input type="hidden" name="GONGJI_CONTENT" value="'+data[2][j].chat_content+'">';
+                                                        chatHtml += '<input type="hidden" name="SENDER" value="'+memberId+'">';
+                                                        chatHtml += '<input type="hidden" name="RECEIVER" value="'+name+'">';
+                                                    chatHtml += '</form>';
+                                                chatHtml += '</div>';
+                                            chatHtml += '</div>';
+                                        chatHtml += '</div>';
+                                    }
+                                    if(all_chat_date[i]==data[2][j].sliced_chat_regdate && data[2][j].sender==memberId) {
+                                        chatHtml += '<div class="message-row message-row--own">';
+                                            chatHtml += '<div class="message__info">';
+                                                chatHtml += '<span class="message__bubble">'+data[2][j].chat_content+'</span>';
+                                                chatHtml += '<span class="message__time">'+data[2][j].sliced_chat_time+'</span>';
+                                                chatHtml += '<button class="gongji" style="margin-bottom:9px; font-size:7px; background-color: transparent; border: none;">공지</button>';
+                                                chatHtml += '<form action="gongji" method="post">';
+                                                    chatHtml += '<input type="hidden" name="GONGJI_CONTENT" value="'+data[2][j].chat_content+'">';
+                                                    chatHtml += '<input type="hidden" name="SENDER" value="'+memberId+'">';
+                                                    chatHtml += '<input type="hidden" name="RECEIVER" value="'+name+'">';
+                                                chatHtml += '</form>';
+                                            chatHtml += '</div>';
+                                        chatHtml += '</div>';
+                                    }
+                                }
+                            chatHtml += '</span>';
+                        }
+                    chatHtml += '</main>';
+                chatHtml += '</div>';
+                $("#ajax").html(chatHtml);
+            }
+            // 채팅만 업로드 할 때
+            else {
+                chatHtml += '<main class="main-screen main-chat">';
+                    for (let i = 0; i < all_chat_date.length; i++) {
+                        chatHtml += '<div style="text-align:center;">';
+                            chatHtml += '<br>';
+                            chatHtml += '<span class="chat__timestamp">';
+                            chatHtml += all_chat_date[i];
+                            chatHtml += '</span>';
+                        chatHtml += '</div>';
+                        chatHtml += '<br>';
+                        chatHtml += '<span>';
+                            for (let j = 0; j < data[1].length; j++) {
+                                if(all_chat_date[i]==data[1][j].sliced_chat_regdate && data[1][j].sender==name) {
+                                    chatHtml += '<div class="message-row">';
+                                        chatHtml += '<img src="https://play-lh.googleusercontent.com/Ob9Ys8yKMeyKzZvl3cB9JNSTui1lJwjSKD60IVYnlvU2DsahysGENJE-txiRIW9_72Vd"/>';
+                                        chatHtml += '<div class="message-row__content">';
+                                            chatHtml += '<span class="message__author">'+name+'</span>';
+                                            chatHtml += '<div class="message__info">';
+                                                chatHtml += '<span class="message__bubble">'+data[1][j].chat_content+'</span>';
+                                                chatHtml += '<span class="message__time">'+data[1][j].sliced_chat_time+'</span>';
+                                                chatHtml += '<button class="gongji" style="margin-bottom:9px; font-size:7px; background-color: transparent; border: none;">공지</button>';
+                                                chatHtml += '<form action="gongji" method="post">';
+                                                    chatHtml += '<input type="hidden" name="GONGJI_CONTENT" value="'+data[1][j].chat_content+'">';
+                                                    chatHtml += '<input type="hidden" name="SENDER" value="'+memberId+'">';
+                                                    chatHtml += '<input type="hidden" name="RECEIVER" value="'+name+'">';
+                                                chatHtml += '</form>';
+                                            chatHtml += '</div>';
+                                        chatHtml += '</div>';
+                                    chatHtml += '</div>';
+                                }
+                                if(all_chat_date[i]==data[1][j].sliced_chat_regdate && data[1][j].sender==memberId) {
+                                    chatHtml += '<div class="message-row message-row--own">';
+                                        chatHtml += '<div class="message__info">';
+                                            chatHtml += '<span class="message__bubble">'+data[1][j].chat_content+'</span>';
+                                            chatHtml += '<span class="message__time">'+data[1][j].sliced_chat_time+'</span>';
+                                            chatHtml += '<button class="gongji" style="margin-bottom:9px; font-size:7px; background-color: transparent; border: none;">공지</button>';
+                                            chatHtml += '<form action="gongji" method="post">';
+                                                chatHtml += '<input type="hidden" name="GONGJI_CONTENT" value="'+data[1][j].chat_content+'">';
+                                                chatHtml += '<input type="hidden" name="SENDER" value="'+memberId+'">';
+                                                chatHtml += '<input type="hidden" name="RECEIVER" value="'+name+'">';
+                                            chatHtml += '</form>';
+                                        chatHtml += '</div>';
+                                    chatHtml += '</div>';
+                                }
+                            }
+                        chatHtml += '</span>';
+                    }
+                chatHtml += '</main>';
+                $("#chats").html(chatHtml);
+            }
+
+            // ajax 에 필요한 변수들
+            // let memberId = document.getElementById('memberId');
+            let gongjiBtn = document.getElementsByClassName('gongji'); // '공지' 라고 쓰여있는 버튼
+            let sendChatBtn = document.getElementById('sendChat'); // 채팅 전송 버튼
+
+            const uploadGongji = (e) => {
+                console.log(e.target.parentNode.children[3].children[1].value);
+                let gongji_content_to_put = $(e.target)[0].parentNode.children[3].children[0].value;
+                let sender_to_put = $(e.target)[0].parentNode.children[3].children[1].value;
+                console.log("$(e.target) : " + $(e.target));
+                console.log("$(e.target)[0] : " + $(e.target)[0]);
+                console.log("$(e.target)[0].parentNode : " + $(e.target)[0].parentNode);
+                console.log("$(e.target)[0].parentNode.children[3] : " + $(e.target)[0].parentNode.children[3].innerHTML);
+                console.log("$(e.target)[0].parentNode.children[3].children[1] : " + $(e.target)[0].parentNode.children[3].children[1].innerHTML);
+                // console.log("$(e.target)[0].parentNode.children[3].children[1].value : " + $(e.target)[0].parentNode.children[3].children[1]);
+                console.log("sender_to_put : " + sender_to_put);
+                let receiver_to_put = $(e.target)[0].parentNode.children[3].children[2].value;
+                console.log(gongji_content_to_put, sender_to_put, receiver_to_put);
+                gongjiJson(gongji_content_to_put, sender_to_put, receiver_to_put);
+            }
+            for (let i = 0; i < gongjiBtn.length; i++) {
+                gongjiBtn[i].addEventListener('click', uploadGongji);
+            }
+
+            // chat 전체 ajax (chatHtml)
+            function gongjiJson(gongji_content_to_put, sender_to_put, receiver_to_put) {
+                let gongji_content = gongji_content_to_put;
+                let sender = sender_to_put;
+                let receiver = receiver_to_put;
+                let gongjiData = {"gongji_content" : gongji_content, "sender": sender, "receiver": receiver};
+                let memberId_to_put = document.getElementById('memberId').value;
+                console.log("memberId_to_put : " + memberId_to_put);
+                
+                $.ajax({
+                    url:"/board/ajaxInsertGongji",
+                    async : false,
+                    type: "GET",
+                    dataType: "json",
+                    data: gongjiData,
+                    cache: false,
+                    success: function (data){
+                        let all_chat_date = data[1];
+                        console.log(all_chat_date);
+                        let name = receiver;
+                        let memberId = memberId_to_put;
+                        let isGongji = true;
+                        ajaxHtml(data, all_chat_date, name, memberId, isGongji)
+                    },
+                    error: function(){alert("error");}
+                });
+            }
+            // ajax 로 댓글 업로드 하는 메소드
+            const uploadChat = (e) => {
+                let receiver_to_put = document.getElementById('receiver').value;
+                let sender_to_put = document.getElementById('memberId').value;
+                let chat_content_to_put = document.getElementById('chat_content').value;
+                console.log(receiver_to_put, sender_to_put, chat_content_to_put);
+                chatJson(receiver_to_put, sender_to_put, chat_content_to_put);
+            }
+            sendChatBtn.addEventListener('click', uploadChat);
+
+            // ajax 로 댓글 업로드 하는 메소드
+            function chatJson(receiver_to_put, sender_to_put, chat_content_to_put) {
+                let receiver = receiver_to_put;
+                let sender = sender_to_put;
+                let chat_content = chat_content_to_put;
+                let chatData = {"receiver": receiver, "sender": sender, "chat_content" : chat_content};
+                let memberId_to_put = document.getElementById('memberId').value;
+                
+                $.ajax({
+                    url:"/board/ajaxUploadChat",
+                    async : false,
+                    type: "POST",
+                    dataType: "json",
+                    data: chatData,
+                    cache: false,
+                    success: function (data){
+                        let all_chat_date = data[0];
+                        let name = receiver;
+                        let memberId = memberId_to_put;
+                        let isGongji = false;
+                        ajaxHtml(data, all_chat_date, name, memberId, isGongji)
+                    },
+                    error: function(){alert("error");}
+                });
+            }
+        }
     </script>
 </html>

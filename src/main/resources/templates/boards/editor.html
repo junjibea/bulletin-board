@@ -1,0 +1,60 @@
+<HTML>
+
+    <HEAD>
+    <TITLE>웹에디터 예제5</TITLE>
+    <SCRIPT langauge="javascript">
+    function htmledit(excute,values)
+    {
+    if(values==null)
+    {
+    dhtmlframe.document.execCommand(excute);
+    }
+    else
+    {
+    dhtmlframe.document.execCommand(excute,"",values);
+    }
+    }
+    function datasubmit()
+    {
+    form.comment.value = dhtmlframe.document.body.innerHTML;
+    }
+    </SCRIPT>
+    </HEAD>
+    
+    <BODY>
+    <form name=form method=post action="test.php">
+    <A href="javascript:htmledit('cut');">자르기</a>
+    <A href="javascript:htmledit('copy');">복사</a>
+    <A href="javascript:htmledit('paste');">붙여넣기</a>
+    <A href="javascript:htmledit('justifyleft');">좌측정렬</a>
+    <A href="javascript:htmledit('justifycenter');">중심정렬</a>
+    <A href="javascript:htmledit('justifyright');">우측정렬</a>
+    <A href="javascript:htmledit('insertorderedlist');">점표시목록</a>
+    <A href="javascript:htmledit('insertunorderedlist');">숫자목록</a>
+    <A href="javascript:htmledit('outdent');">들여쓰기줄이기</a>
+    <A href="javascript:htmledit('indent');">들여쓰기늘이기</a>
+    <A href="javascript:htmledit('createlink');">링크</a><BR>
+    글꼴 >
+    <A href="javascript:htmledit('fontname','굴림');">굴림</a>
+    <A href="javascript:htmledit('fontname','궁서');">궁서</a>
+    글크기 >
+    <A href="javascript:htmledit('fontSize',2);">2</a>
+    <A href="javascript:htmledit('fontSize',3);">3</a>
+    <A href="javascript:htmledit('fontSize',4);">4</a>
+    <A href="javascript:htmledit('bold');">볼드</A>
+    <A href="javascript:htmledit('italic');">이탤릭</A>
+    <A href="javascript:htmledit('underline');">언더라인</A>
+    <A href="javascript:htmledit('fontname');">언더라인</A>
+    <P><IFRAME NAME=dhtmlframe></IFRAME>
+    <P><TEXTAREA NAME="comment" ROWS="3"></TEXTAREA></P>
+    <P><input type="submit" value="확인" Onclick="datasubmit()">
+    <SCRIPT LANGUAGE="JavaScript">
+    // <!-- JavaScript
+    // dhtmlframe.document.designMode = "On"
+    // - JavaScript - -->
+    </SCRIPT>
+    
+    </form>
+    </BODY>
+    
+    </HTML>
